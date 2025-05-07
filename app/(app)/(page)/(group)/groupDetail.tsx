@@ -15,26 +15,24 @@ interface GroupDetailProps {
 const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
     const router = useRouter();
     const { user } = useAuth();
-    const { data: groupData, isLoading, isError, error } = useQuery(
+    const { data: groupData, isFetching, isLoading, isError, error } = useQuery(
         {
             queryKey: ['group', groupId],
             queryFn: fetchGroupDetail,
             enabled: !!user,
+            refetchOnWindowFocus: "always",
         }
     )
 
     // Menu state
     const [menuVisible, setMenuVisible] = useState<boolean>(false);
-
     const [leaveModalVisible, setLeaveModalVisible] = useState<boolean>(false);
     const [invitationVisible, setInvitationVisible] = useState<boolean>(false);
     const [groupIconEditVisible, setGroupIconEditVisible] = useState<boolean>(false);
-
     const [activeTab, setActiveTab] = useState<'expenses' | 'balances' | 'transactions'>('balances');
 
     // Handle menu options
-    const handleEditGroupPhoto = () => {
-        console.log('Edit group photo');
+    const handleEditGroupIcon = () => {
         setMenuVisible(false);
         setGroupIconEditVisible(true); // Open group icon edit overlay
     };
@@ -74,7 +72,7 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
     };
 
     // Show loading state
-    if (isLoading) {
+    if (isLoading || isFetching) {
         return (
             <View className="flex-1 justify-center items-center bg-gray-100">
                 <ActivityIndicator size="large" color="#43BFF4" />
@@ -140,7 +138,7 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
 
                         <TouchableOpacity
                             className="flex-row items-center px-4 py-3 border-b border-gray-200"
-                            onPress={handleEditGroupPhoto}
+                            onPress={handleEditGroupIcon}
                         >
                             <Text className="text-gray-800">Edit Group Icon</Text>
                         </TouchableOpacity>
@@ -308,6 +306,7 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
     async function fetchGroupDetail(): Promise<GroupDetail> {
         try {
             if (user) {
+                console.log('Fetching group details for user:', user.id);
                 const groupDetail = await getGroupDetails(groupId, user.id);
                 return groupDetail;
             }

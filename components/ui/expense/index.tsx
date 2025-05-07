@@ -288,7 +288,7 @@ export const ExpenseItemOverlay: React.FC<ExpenseItemOverlayProps> = ({
                 setSelectedCategory(expenseCategories.length > 0 ? expenseCategories[0] : undefined);
             }
         }
-    }, [visible, currentItem, initialExpenseMembers, expenseCategories]);
+    }, [visible, currentItem?.id]);
 
     // Save item
     const saveItem = (): void => {

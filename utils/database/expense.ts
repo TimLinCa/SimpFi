@@ -203,6 +203,8 @@ export async function addOrUpdateGroupExpense(
             return formattedItem;
         });
 
+        console.log('Formatted items for group expense:', formattedItems);
+
         // Call the database function
         const { data, error } = await supabase.rpc('add_or_update_group_expense', {
             p_expense_id: expenseId,

@@ -49,3 +49,14 @@ export interface MemberForExpense extends Member {
     amount?: number;
 }
 
+export interface ScanReceiptResult {
+    total: number;
+    store_name: string;
+    time: string;
+    items: ReceiptItem[];
+}
+
+export interface ReceiptItem {
+    item_value: number;
+    item_name: string;
+}

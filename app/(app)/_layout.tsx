@@ -4,16 +4,19 @@ import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import React from 'react'
 import { View, StyleSheet } from 'react-native'
 import FloatingButton from "@/components/ui/home/FloatingButton";
+import { PortalProvider } from '@/hooks/portalContext';
 
 const Layout = () => {
     return (
         <GluestackUIProvider>
-            <View style={styles.container}>
-                <Stack screenOptions={{
-                    headerShown: false
-                }}>
-                </Stack>
-            </View>
+            <PortalProvider>
+                <View style={styles.container}>
+                    <Stack screenOptions={{
+                        headerShown: false
+                    }}>
+                    </Stack>
+                </View>
+            </PortalProvider>
         </GluestackUIProvider>
     );
 }

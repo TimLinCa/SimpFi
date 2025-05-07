@@ -28,7 +28,8 @@ const GroupDropDown: React.FC<GroupDropDownProps> = ({
             label: group.name,
             value: group.id,
             icon: group.iconName || "account-group",
-            item: group
+            item: group,
+            iconColor: group.iconColor || "#3b82f6",
         }));
     }, [groups]);
 
@@ -80,14 +81,14 @@ const GroupDropDown: React.FC<GroupDropDownProps> = ({
                     <MaterialCommunityIcons
                         name={selectedGroupData ? selectedGroupData.iconName : "account-group"}
                         size={20}
-                        color="#3b82f6"
+                        color={selectedGroupData ? selectedGroupData.iconColor : "#3b82f6"}
                         style={{ marginRight: 8 }}
                     />
                 )}
                 renderItem={(item) => (
                     <View className="px-4 py-3 flex-row justify-between items-center">
                         <View className="flex-row items-center">
-                            <MaterialCommunityIcons name={item.icon} size={20} color="#3b82f6" />
+                            <MaterialCommunityIcons name={item.icon} size={20} color={item ? item.iconColor : "#3b82f6"} />
                             <Text className="ml-3 text-gray-800 text-base">{item.label}</Text>
                         </View>
                         {item.value === groupValue && (
