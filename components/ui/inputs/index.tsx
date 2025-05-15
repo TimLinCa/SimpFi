@@ -101,7 +101,7 @@ export const CustomInput: React.FC<CustomInputProps> = (
                 className="bg-gray-100 p-3 rounded-lg text-gray-800"
                 value={value}
                 onChangeText={setValue}
-                placeholder="Enter income title"
+                placeholder={`Enter ${label}`}
                 placeholderTextColor="#9ca3af"
             />
         </View>

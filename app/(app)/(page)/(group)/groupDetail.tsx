@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, FlatList, Image, Modal, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { ExpenseItem, TransactionItem, MemberWithBalanceItem, FloatingButton, InvitationOverlay, GroupIconEditOverlay } from '@/components/ui/group';
 import { TransactionData, GroupExpense, Member, Group, GroupDetail, GroupMembers, MemberWithBalance } from "@/types/group"
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getGroupDetails } from '@/utils/database/group';
 import { useAuth } from '@/app/context/auth';
+import {useRefreshOnFocus} from '@/hooks';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface GroupDetailProps {
@@ -15,14 +16,22 @@ interface GroupDetailProps {
 const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
     const router = useRouter();
     const { user } = useAuth();
-    const { data: groupData, isFetching, isLoading, isError, error } = useQuery(
+    const queryClient = useQueryClient();
+    const { 
+        data: groupData, 
+        refetch: refetchGroupData,
+        isFetching, 
+        isLoading, 
+        isError, 
+        error } = useQuery(
         {
-            queryKey: ['group', groupId],
+            queryKey: ['groupDetail', groupId],
             queryFn: fetchGroupDetail,
             enabled: !!user,
-            refetchOnWindowFocus: "always",
         }
     )
+
+    useRefreshOnFocus('groupDetail', refetchGroupData);
 
     // Menu state
     const [menuVisible, setMenuVisible] = useState<boolean>(false);
@@ -306,7 +315,6 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
     async function fetchGroupDetail(): Promise<GroupDetail> {
         try {
             if (user) {
-                console.log('Fetching group details for user:', user.id);
                 const groupDetail = await getGroupDetails(groupId, user.id);
                 return groupDetail;
             }
@@ -318,6 +326,20 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
             throw error;
         }
     }
+
+    const refreshGroupData = useCallback(async (): Promise<void> => {
+        if (user?.id) {
+          try {
+            // Force clear any cached data
+            queryClient.invalidateQueries({ queryKey: ['groupDetail'] });
+            
+            // Refetch data
+            await refetchGroupData();
+          } catch (error) {
+            console.error('Error refreshing data:', error);
+          }
+        }
+      }, [user, queryClient, refetchGroupData]);
 };
 
 export default GroupDetailPage;

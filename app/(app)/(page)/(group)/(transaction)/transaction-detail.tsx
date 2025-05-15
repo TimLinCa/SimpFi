@@ -4,10 +4,10 @@ import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { formatDate } from '@/utils/ui';
 import { getTransactionById } from '@/utils/database/transaction';
-import { TransactionData } from '@/types/group';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { formatCurrency } from '@/utils/ui';
 import { useAuth } from '@/app/context/auth';
+import {useRefreshOnFocus} from '@/hooks';
 interface TransactionDetailProps {
     transactionId: string;
 }
@@ -21,13 +21,28 @@ const TransactionDetailPage: React.FC<TransactionDetailProps> = ({ transactionId
     // Delete confirmation modal state
     const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
 
-    const { data: transactionData, isLoading } = useQuery({
-        queryKey: ['transaction', transactionId],
+    const { 
+        data: transactionData, 
+        isLoading,
+        refetch: refetchTransactionData,
+     } = useQuery({
+        queryKey: ['transactionDetail', transactionId],
         queryFn: () => getTransactionById(transactionId),
         enabled: !!transactionId,
     });
 
+    useRefreshOnFocus('transactionDetail', refetchTransactionData,[transactionId]);
+
     // Handle menu options
+    const handleEditTransaction = () => {
+        setMenuVisible(false);
+        // Navigate to edit transaction screen
+        router.push({
+            pathname: '/(app)/(page)/(addTransaction)/[id]',
+            params: { id: transactionId}
+        });
+    };
+
     const handleShareReceipt = () => {
         console.log('Share transaction receipt');
         setMenuVisible(false);
@@ -84,12 +99,19 @@ const TransactionDetailPage: React.FC<TransactionDetailProps> = ({ transactionId
             {/* Menu Dropdown */}
             {menuVisible && (
                 <View className="absolute right-2 top-12 z-10 bg-white rounded-lg shadow-lg overflow-hidden">
+                    {user?.id == transactionData.paidBy.id ? <TouchableOpacity
+                        className="flex-row items-center px-4 py-3 border-b border-gray-200"
+                        onPress={handleEditTransaction}
+                    >
+                        <MaterialCommunityIcons name="pencil" size={20} color="#3b82f6" className="mr-2" />
+                        <Text className="text-gray-800">Edit Transaction</Text>
+                    </TouchableOpacity> : null} 
                     <TouchableOpacity
                         className="flex-row items-center px-4 py-3 border-b border-gray-200"
                         onPress={handleShareReceipt}
                     >
                         <MaterialCommunityIcons name="share-variant" size={20} color="#3b82f6" className="mr-2" />
-                        <Text className="text-gray-800">Share Receipt</Text>
+                        <Text className="text-gray-800">Share Transaction</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity

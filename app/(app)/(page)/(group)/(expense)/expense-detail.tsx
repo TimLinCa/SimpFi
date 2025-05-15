@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, FlatList, Modal } from 'react-native';
-
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { get_group_expense_by_id_for_user } from '@/utils/database/expense';
 import { GroupDetailExpense, GroupExpenseItemUserSplit } from '@/types/group';
 import { useAuth } from '@/app/context/auth';
-import MemberWithBalanceItem from "@/components/ui/group/MemberWithBalanceItem";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ExpenseItemBreakDown, ExpenseParticipants } from '@/components/ui/expense';
 import { formatCurrency, formatDate } from '@/utils/ui';
+import {useRefreshOnFocus} from '@/hooks';
 
 interface ExpenseDetailProps {
     expenseId: string;
@@ -29,6 +28,8 @@ const ExpenseDetailPage: React.FC<ExpenseDetailProps> = ({ expenseId }) => {
         queryFn: getGroupExpenseById,
         enabled: !!id && !!user?.id,
     });
+
+    useRefreshOnFocus('expenseDetail', getGroupExpenseById, [id]);
 
     // Handle menu options
     const handleEditExpense = () => {

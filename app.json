@@ -37,11 +37,10 @@
       [
         "expo-asset",
         {
-          "assets": [
-            "./assets/classifier/category_classifier.json"
-          ]
+          "assets": ["./assets/classifier/category_classifier.json"]
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

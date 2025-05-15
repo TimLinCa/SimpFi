@@ -169,7 +169,6 @@ const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ transactionId }
         if (transactionId) {
             const transaction = await getTransactionById(transactionId);
             if (transaction) {
-                // setSelectedGroupData(transaction.group);
                 setPaidTo(transaction.paidTo);
                 setAmount(transaction.amount.toString());
                 setDate(new Date(transaction.date));
