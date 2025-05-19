@@ -15,12 +15,12 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { Dimensions } from "react-native";
 import { supabase } from "@/utils/supabase";
 import MenuButton from "@/components/ui/home/MenuButton";
-import { CartesianChart, Bar, Line, useChartPressState } from "victory-native";
 import { Circle, DashPathEffect, useFont } from "@shopify/react-native-skia";
 import { Inter_500Medium } from "@expo-google-fonts/inter";
-import { useDerivedValue } from "react-native-reanimated";
+import { useAnimatedProps, useDerivedValue, useSharedValue } from "react-native-reanimated";
 import { getMonthlyTrend } from "@/utils/database";
 import { MonthlyGraphData } from "@/types/interface";
+import { TrendBarChart } from "@/components/ui/graph";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -58,23 +58,17 @@ const AnalyticsPage = () => {
     "overview"
   );
   const font = useFont(Inter_500Medium, 12);
-  const [monthlyGraphData, setMonthlyGraphData] = useState<MonthlyGraphData[]>([]);
+  const [selectedValue, setSelectedValue] = useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
   // Query for monthly trends
   const {
-    data: monthlyTrends,
+    data: monthlyGraphData,
     isLoading: loadingTrends,
     refetch: refetchTrends,
   } = useQuery({
     queryKey: ["monthlyTrends", user?.id, selectedPeriod],
-    queryFn: async () => {
-      if (!user) return [];
-      // Call your SQL function
-      const response = await supabase.rpc("get_monthly_trends", {
-        p_user_id: user.id,
-        p_months: selectedPeriod,
-      });
-      return response.data as MonthlyTrend[];
-    },
+    queryFn: getMonthlyData,
     enabled: !!user?.id,
   });
 
@@ -142,6 +136,18 @@ const AnalyticsPage = () => {
     enabled: !!user?.id && activeTab === "overview",
   });
 
+  async function getMonthlyData() {
+    if (!user?.id) return;
+    const monthlyTrend = await getMonthlyTrend(user.id, 6);
+    return monthlyTrend.map((trend, index) => ({
+      month: trend.month.substring(0, 3),
+      index,
+      income: trend.income,
+      expense: trend.total_expense,
+      net: trend.net_cashflow,
+    }));
+  }
+
   const isLoading =
     loadingTrends ||
     loadingSummary ||
@@ -170,46 +176,28 @@ const AnalyticsPage = () => {
     </View>
   );
 
-  const { state, isActive } = useChartPressState({
-    x: "",
-    y: { income: 0 },
-  });
-
-  const selectedIncomeValue = useDerivedValue(() => {
-    console.log("Selected Income Value:", state);
-  }, [state]);
-
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedChart, setSelectedChart] = useState<
     "income" | "expense" | "net" | null
   >(null);
 
-  const handleChartPress = (event: any) => {
-    console.log("Chart pressed:", event);
-  };
-
   const renderCharts = () => {
-    if (!monthlyTrends || monthlyTrends.length === 0) return null;
+    if (!monthlyGraphData || monthlyGraphData.length === 0) return null;
 
     // Prepare data for the charts
-    const data = monthlyTrends.map((trend, index) => ({
-      month: trend.month.substring(0, 3),
-      monthFull: trend.month,
-      index,
-      income: trend.income,
-      expense: trend.total_expense,
-      net: trend.net_cashflow,
+    const incomeData = monthlyGraphData.map((trend) => ({
+      label: trend.month,
+      value: trend.income,
     }));
 
-    console.log("Data for charts:", data);
+    const expenseData = monthlyGraphData.map((trend) => ({
+      month: trend.month,
+      value: trend.expense,
+    }));
 
-    // Get the selected month data and previous month data for comparison
-    const selectedData = selectedMonth !== null ? data[selectedMonth] : null;
-    const previousMonthData =
-      selectedMonth !== null && selectedMonth > 0
-        ? data[selectedMonth - 1]
-        : null;
-
+    const netData = monthlyGraphData.map((trend) => ({
+      month: trend.month,
+      value: trend.net,
+    }));
     // Calculate change from previous month
     const getChange = (current: number, previous: number | undefined) => {
       if (previous === undefined) return "N/A";
@@ -225,134 +213,12 @@ const AnalyticsPage = () => {
 
         {/* Income Chart */}
         <View className="mb-6">
-          <Text className="text-sm font-medium text-gray-600 mb-1">Income</Text>
-          <View style={{ height: 150 }}>
-            <CartesianChart
-              chartPressState={state}
-              data={data}
-              xKey="month"
-              yKeys={["income"]}
-              xAxis={{
-                font,
-                labelColor: "#000",
-                lineWidth: 0,
-                linePathEffect: <DashPathEffect intervals={[4, 4]} />,
-              }}
-              yAxis={[
-                {
-                  yKeys: ["income"],
-                  font,
-                  linePathEffect: <DashPathEffect intervals={[4, 4]} />,
-                },
-              ]}
-            >
-              {({ points, chartBounds }) => {
-                // Add safety check
-                if (!points || !points.income) {
-                  return null;
-                }
-
-                return (
-                  <>
-                    {/* Clickable Income Bars */}
-                    {points.income.map((point, index) => (
-                      <>
-                        <Bar
-                          key={index}
-                          points={[point]}
-                          chartBounds={chartBounds}
-                          color={
-                            selectedMonth === index &&
-                            selectedChart === "income"
-                              ? "#15803d"
-                              : "#22c55e"
-                          }
-                          barWidth={20}
-                          roundedCorners={{ topLeft: 4, topRight: 4 }}
-                        />
-                        {isActive && handleChartPress(point)}
-                      </>
-                    ))}
-                  </>
-                );
-              }}
-            </CartesianChart>
-          </View>
+          <TrendBarChart chartData={incomeData} chartProps={{
+            unSelectedBarColor: "#43BFF499",
+            selectedBarColor: "#43BFF4"
+          }}
+            setSelectedMonth={setSelectedMonth} />
         </View>
-
-        {/* Net Position Chart */}
-        {/* <View className="mb-6">
-          <Text className="text-sm font-medium text-gray-600 mb-1">
-            Net Position
-          </Text>
-          <View style={{ height: 150 }}>
-            <CartesianChart
-              data={data}
-              xKey="month"
-              yKeys={["net"]}
-              domainPadding={{ left: 20, right: 20, top: 20 }}
-              axisOptions={{
-                formatYLabel: (value) => `$${value.toFixed(0)}`,
-              }}
-            >
-              {({ points, chartBounds }: any) => (
-                <Line
-                  points={points.net}
-                  color="#3b82f6"
-                  strokeWidth={3}
-                  curveType="linear"
-                />
-              )}
-            </CartesianChart>
-          </View>
-        </View> */}
-
-        {/* Selected Data Details */}
-        {selectedData && selectedChart && (
-          <View className="bg-gray-100 p-4 rounded-lg mt-2">
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-lg font-bold">
-                {selectedData.monthFull} Total
-              </Text>
-              <Text className="text-2xl font-bold">
-                $
-                {selectedChart === "income"
-                  ? selectedData.income.toFixed(2)
-                  : selectedChart === "expense"
-                  ? selectedData.expense.toFixed(2)
-                  : selectedData.net.toFixed(2)}
-              </Text>
-            </View>
-
-            <View className="flex-row justify-between items-center">
-              <Text className="text-gray-600">vs Previous Month</Text>
-              <Text
-                className={`text-lg font-medium ${
-                  selectedChart === "income"
-                    ? previousMonthData &&
-                      selectedData.income > previousMonthData.income
-                      ? "text-green-600"
-                      : "text-red-600"
-                    : selectedChart === "expense"
-                    ? previousMonthData &&
-                      selectedData.expense < previousMonthData.expense
-                      ? "text-green-600"
-                      : "text-red-600"
-                    : previousMonthData &&
-                      selectedData.net > previousMonthData.net
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {selectedChart === "income"
-                  ? getChange(selectedData.income, previousMonthData?.income)
-                  : selectedChart === "expense"
-                  ? getChange(selectedData.expense, previousMonthData?.expense)
-                  : getChange(selectedData.net, previousMonthData?.net)}
-              </Text>
-            </View>
-          </View>
-        )}
       </View>
     );
   };
@@ -399,16 +265,14 @@ const AnalyticsPage = () => {
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab as typeof activeTab)}
-            className={`flex-1 py-2 ${
-              activeTab === tab ? "border-b-2 border-blue-500" : ""
-            }`}
+            className={`flex-1 py-2 ${activeTab === tab ? "border-b-2 border-blue-500" : ""
+              }`}
           >
             <Text
-              className={`text-center capitalize ${
-                activeTab === tab
-                  ? "text-blue-500 font-semibold"
-                  : "text-gray-500"
-              }`}
+              className={`text-center capitalize ${activeTab === tab
+                ? "text-blue-500 font-semibold"
+                : "text-gray-500"
+                }`}
             >
               {tab}
             </Text>
@@ -480,48 +344,11 @@ const AnalyticsPage = () => {
             </>
           )}
 
-          {/* Period Selector */}
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-sm text-gray-600">Period</Text>
-            <View className="flex-row">
-              {[3, 6, 12].map((months) => (
-                <TouchableOpacity
-                  key={months}
-                  onPress={() => setSelectedPeriod(months)}
-                  className={`px-4 py-2 rounded-lg ml-2 ${
-                    selectedPeriod === months ? "bg-blue-500" : "bg-gray-200"
-                  }`}
-                >
-                  <Text
-                    className={`${
-                      selectedPeriod === months ? "text-white" : "text-gray-700"
-                    }`}
-                  >
-                    {months}M
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
           {/* Charts */}
           {activeTab === "overview" && renderCharts()}
         </View>
       </ScrollView>
     </View>
-  );
-};
-
-const getMonthlyData = async (userId: string, monthPeriod: number) => {
-  const monthlyTrend = await getMonthlyTrend(userId, monthPeriod);
-  setMonthlyGraphData(
-    monthlyTrend.map((trend, index) => ({
-      month: trend.month.substring(0, 3),
-      index,
-      income: trend.income,
-      expense: trend.total_expense,
-      net: trend.net_cashflow,
-    }))
   );
 };
 
