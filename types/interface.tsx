@@ -4,6 +4,7 @@ export interface Category {
   id: string;
   name: string;
   icon_name: string;
+  icon_color: string | null;
 }
 
 export interface Profile {
@@ -71,10 +72,11 @@ export interface MonthlyTrend {
 }
 
 export interface CategoryBreakdown {
-  category: string;
-  icon: string;
+  month: Date;
+  category: Category;
   amount: number;
   percentage: number;
+  is_group: boolean;
 }
 
 export interface AnalyticsSummary {
@@ -94,4 +96,9 @@ export interface MonthlyGraphData {
   income: number;
   expense: number;
   net: number;
+}
+
+export interface ChartData {
+  value: number;
+  label: string;
 }

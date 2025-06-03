@@ -1,9 +1,6 @@
-import { View, Text } from 'react-native'
-import React, { useEffect } from 'react'
-import { DashPathEffect, useFont } from '@shopify/react-native-skia';
+import { View } from 'react-native'
+import React, { useMemo } from 'react'
 import { BarChart } from "react-native-gifted-charts";
-import { Inter_500Medium } from "@expo-google-fonts/inter";
-import { configureReanimatedLogger, ReanimatedLogLevel, useAnimatedProps, useAnimatedStyle, useDerivedValue, useSharedValue } from 'react-native-reanimated';
 import { Dimensions } from 'react-native';
 
 interface trendBarChartProps {
@@ -15,7 +12,7 @@ interface trendBarChartProps {
     unSelectedBarColor: string;
     selectedBarColor: string;
   },
-  setSelectedMonth: (month: string | null) => void,
+  onSelectedIndexChanged?: (index: number | null) => void,
 }
 
 interface BarItemData {
@@ -24,36 +21,43 @@ interface BarItemData {
   frontColor: string;
 }
 
-const TrendBarChart = ({ chartData, chartProps, setSelectedMonth }: trendBarChartProps) => {
+const TrendBarChart = ({ chartData, chartProps, onSelectedIndexChanged }: trendBarChartProps) => {
   const windowWidth = Dimensions.get('window').width;
   const [barData, setBarData] = React.useState<BarItemData[]>([]);
-  const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
+  const [graphSelectedIndex, setGraphSelectedIndex] = React.useState<number | null>(null);
+  const noOfSections = 5;
 
-  React.useEffect(() => {
+  const formatValue = (value: string) => {
+    let parsedValue = parseFloat(value);
+    if (parsedValue === 0) return "0";
+    if (parsedValue >= 1000) {
+      return (parsedValue / 1000).toFixed(1) + "K";
+    }
+    return value.toString();
+  };
+
+  useMemo(() => {
     const mappedData = chartData.map((item, index) => ({
       value: item.value,
       label: item.label,
       frontColor: chartProps.unSelectedBarColor,
     }));
     setBarData(mappedData);
-  }, [chartData, chartProps]);
+  }, []);
 
-  useEffect(() => {
-    if (selectedIndex) {
-      barData.forEach((bar, i) => {
-        if (i !== selectedIndex) {
-          bar.frontColor = chartProps.unSelectedBarColor;
-        } else {
-          bar.frontColor = chartProps.selectedBarColor;
-        }
-      });
-      setBarData([...barData]);
-    }
-  }, [selectedIndex]);
 
   const onBarPress = (item: any, index: number) => {
-    setSelectedMonth(item.label);
-    setSelectedIndex(index);
+    barData.forEach((bar, i) => {
+      if (i !== index) {
+        bar.frontColor = chartProps.unSelectedBarColor;
+      } else {
+        bar.frontColor = chartProps.selectedBarColor;
+      }
+    });
+    if (onSelectedIndexChanged) {
+      onSelectedIndexChanged(index);
+    }
+    setBarData([...barData]);
   };
 
   return (
@@ -68,8 +72,9 @@ const TrendBarChart = ({ chartData, chartProps, setSelectedMonth }: trendBarChar
         barWidth={35}
         showFractionalValues
         spacing={15}
-        noOfSections={5}
+        noOfSections={noOfSections}
         endSpacing={0}
+        formatYLabel={(value: string) => formatValue(value)}
         yAxisThickness={0}
         width={windowWidth - 100}
         xAxisColor={'lightgray'}
