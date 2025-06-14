@@ -5,16 +5,12 @@ import { getMonthlyCategoryBreakDown } from '@/utils/database';
 import { useAuth } from '@/app/context/auth';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { useFont } from '@shopify/react-native-skia';
-import { Inter_500Medium } from '@expo-google-fonts/inter';
+import { Roboto_700Bold, Roboto_300Light } from '@expo-google-fonts/roboto';
 import { DonutChart } from '@/components/ui/graph/donutChart';
 import { useFocusEffect } from 'expo-router';
-import RenderItem from '@/components/ui/graph/donutChart/RenderItem';
+import { AnalyticsCard, GroupAnalyticsCard } from '@/components/ui/cards';
 
-interface Data {
-    value: number;
-    percentage: number;
-    color: string;
-}
+import { CategoryBreakdown } from '@/types/interface';
 
 interface CategoryBreakDownProps {
     currentDate: Date;
@@ -33,9 +29,10 @@ const CategoryBreakDownPage = ({ currentDate, categoryType }: CategoryBreakDownP
     const totalValue = useSharedValue(0);
     const decimals = useSharedValue<number[]>([]);
     const [colors, setColors] = useState<string[]>([]);
-    const [data, setData] = useState<Data[]>([]);
-    const font = useFont(Inter_500Medium);
+    const [data, setData] = useState<CategoryBreakdown[]>([]);
 
+    const font = useFont(Roboto_700Bold, 60);
+    const smallFont = useFont(Roboto_300Light, 20);
     const {
         data: categoryBreakdown,
         isLoading: loadingCategoriesBreakdown,
@@ -45,6 +42,10 @@ const CategoryBreakDownPage = ({ currentDate, categoryType }: CategoryBreakDownP
         queryFn: () => getMonthCategoryBreakDown(categoryType),
         enabled: !!user?.id,
     });
+
+    function capitalizeFirstLetter(val: string): string {
+        return val.charAt(0).toUpperCase() + String(val).slice(1);
+    }
 
     useFocusEffect(
         useCallback(() => {
@@ -70,13 +71,7 @@ const CategoryBreakDownPage = ({ currentDate, categoryType }: CategoryBreakDownP
             const formattedDecimals = categoryBreakDownForCurrentMonth.map(item => parseFloat(item.percentage.toFixed(2)));
             decimals.value = formattedDecimals;
             setColors(categoryBreakDownForCurrentMonth.map(item => item.category.icon_color ? item.category.icon_color : '#000000'));
-
-            const arrayOfObjects = categoryBreakDownForCurrentMonth.map((item, index) => ({
-                value: item.amount,
-                percentage: item.percentage,
-                color: item.category.icon_color,
-            })) as Data[];
-            setData(arrayOfObjects);
+            setData(categoryBreakDownForCurrentMonth);
         }
     }, [currentDate, categoryBreakdown, totalValue, decimals]);
 
@@ -87,7 +82,7 @@ const CategoryBreakDownPage = ({ currentDate, categoryType }: CategoryBreakDownP
     }
 
     // Now handle conditional rendering AFTER all hooks are called
-    if (loadingCategoriesBreakdown) {
+    if (loadingCategoriesBreakdown || !font || !smallFont) {
         return (
             <SafeAreaView className="flex-1 bg-gray-100">
                 <View className="flex-1 justify-center items-center">
@@ -108,17 +103,6 @@ const CategoryBreakDownPage = ({ currentDate, categoryType }: CategoryBreakDownP
         );
     }
 
-    if (!font) {
-        return (
-            <SafeAreaView className="flex-1 bg-gray-100">
-                <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#3b82f6" />
-                    <Text className="text-gray-600 mt-4">Loading Font...</Text>
-                </View>
-            </SafeAreaView>
-        );
-    }
-
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView
@@ -132,19 +116,37 @@ const CategoryBreakDownPage = ({ currentDate, categoryType }: CategoryBreakDownP
                         outerStrokeWidth={OUTER_STROKE_WIDTH}
                         totalValue={totalValue}
                         font={font}
-                        smallFont={font}
+                        smallFont={smallFont}
                         decimals={decimals}
                         colors={colors}
-                    >
-                    </DonutChart>
+                        totalText={capitalizeFirstLetter(categoryType)}
+                    />
                 </View>
                 {data.map((item, index) => {
-                    return <RenderItem item={item} key={index} index={index} />;
+                    // Check if this is a group expense
+                    if (item.is_group) {
+                        return (
+                            <GroupAnalyticsCard
+                                item={item}
+                                key={index}
+                                index={index}
+                                currentDate={currentDate}
+                            />
+                        );
+                    } else {
+                        return (
+                            <AnalyticsCard
+                                item={item}
+                                key={index}
+                                index={index}
+                                currentDate={currentDate}
+                                categoryType={categoryType}
+                            />
+                        );
+                    }
                 })}
             </ScrollView>
-
         </SafeAreaView>
-
     );
 
 };
@@ -159,6 +161,7 @@ const styles = StyleSheet.create({
         width: RADIUS * 2,
         height: RADIUS * 2,
         marginTop: 10,
+        marginBottom: 10,
     },
 });
 

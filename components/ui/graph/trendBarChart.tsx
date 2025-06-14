@@ -1,5 +1,5 @@
 import { View } from 'react-native'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { BarChart } from "react-native-gifted-charts";
 import { Dimensions } from 'react-native';
 
@@ -24,7 +24,6 @@ interface BarItemData {
 const TrendBarChart = ({ chartData, chartProps, onSelectedIndexChanged }: trendBarChartProps) => {
   const windowWidth = Dimensions.get('window').width;
   const [barData, setBarData] = React.useState<BarItemData[]>([]);
-  const [graphSelectedIndex, setGraphSelectedIndex] = React.useState<number | null>(null);
   const noOfSections = 5;
 
   const formatValue = (value: string) => {
@@ -36,14 +35,14 @@ const TrendBarChart = ({ chartData, chartProps, onSelectedIndexChanged }: trendB
     return value.toString();
   };
 
-  useMemo(() => {
+  useEffect(() => {
     const mappedData = chartData.map((item, index) => ({
       value: item.value,
       label: item.label,
       frontColor: chartProps.unSelectedBarColor,
     }));
     setBarData(mappedData);
-  }, []);
+  }, [chartData]);
 
 
   const onBarPress = (item: any, index: number) => {

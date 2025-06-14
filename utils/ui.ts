@@ -5,9 +5,28 @@ const monthNames: string[] = [
     "July", "August", "September", "October", "November", "December"
 ];
 
-export const formatDate = (date: Date): string => {
-    const parsedDate = new Date(date);
-    return parsedDate.toLocaleDateString('en-US', {
+export const formatDate = (date: Date | string): string => {
+    let parsedDate: Date;
+
+    if (typeof date === 'string') {
+        if (date.includes('T')) {
+            // Handle ISO strings like "2025-06-06T00:00:00.000Z"
+            // Extract just the date part to avoid timezone conversion
+            const dateOnly = date.split('T')[0];
+            parsedDate = new Date(dateOnly + 'T00:00:00');
+        } else {
+            // Handle simple date strings like "2025-06-06"
+            parsedDate = new Date(date + 'T00:00:00');
+        }
+    } else {
+        // Handle Date objects - extract date parts to avoid timezone issues
+        const year = date.getUTCFullYear();
+        const month = date.getUTCMonth();
+        const day = date.getUTCDate();
+        parsedDate = new Date(year, month, day);
+    }
+
+    return parsedDate.toLocaleString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

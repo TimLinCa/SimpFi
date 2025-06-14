@@ -10,7 +10,7 @@ import { Divider } from "@/components/ui/divider";
 import { useRouter } from 'expo-router';
 import { performOAuth } from "@/utils/supabase";
 import { useAuth } from '@/app/context/auth';
-
+import GoogleSigninButton from '@/components/ui/buttons/googleSignin';
 type OAuthProvider = 'google' | 'apple' | 'facebook';
 
 export default function Login() {
@@ -34,15 +34,6 @@ export default function Login() {
 
         if (error) {
             Alert.alert('Error', error.message);
-        }
-    };
-
-    const handleOAuth = async (provider: OAuthProvider) => {
-        try {
-            await performOAuth(provider);
-        } catch (error) {
-            const e = error as Error;
-            Alert.alert('Error', e.message);
         }
     };
 
@@ -112,25 +103,8 @@ export default function Login() {
                             <Text className='text-gray-500'>Or</Text>
                         </View>
 
-                        <View className='flex-row justify-between mt-5'>
-                            <TouchableOpacity
-                                onPress={() => handleOAuth('google')}
-                                className='p-2 bg-gray-100 rounded-2xl'
-                            >
-                                <Image className='w-10 h-10' source={require("@/assets/images/icons/google.png")} />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => handleOAuth('apple')}
-                                className='p-2 bg-gray-100 rounded-2xl'
-                            >
-                                <Image className='w-10 h-10' source={require("@/assets/images/icons/apple.png")} />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => handleOAuth('facebook')}
-                                className='p-2 bg-gray-100 rounded-2xl'
-                            >
-                                <Image className='w-10 h-10' source={require("@/assets/images/icons/facebook.png")} />
-                            </TouchableOpacity>
+                        <View className='mt-5'>
+                            <GoogleSigninButton />
                         </View>
 
                         <View>

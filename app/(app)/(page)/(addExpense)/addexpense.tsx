@@ -44,6 +44,7 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({ expenseId, inputExpense
     const [date, setDate] = useState<Date>(new Date());
     const [isScanning, setIsScanning] = useState<boolean>(false);
     const [scanningProgress, setScanningProgress] = useState<number>(0);
+    const [scannedImage, setScannedImage] = useState();
 
     // Expense items state
     const [items, setItems] = useState<ExpenseItem[]>([]);
@@ -149,24 +150,31 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({ expenseId, inputExpense
 
     // Handle scan receipt (moved to top-right button)
     const scanReceipt = async (): Promise<void> => {
-        const customData = require('@/data_test/receipt.json') as ScanReceiptResult;
-        console.log('customData', customData.time);
-        console.log('customData', new Date(customData.time));
-        setTitle(customData.store_name);
-        setDate(new Date(customData.time + "T12:00:00Z"));
-        setItems(customData.items.map(item => ({
-            id: Date.now().toString() + item.item_name,
-            name: item.item_name,
-            amount: Number(item.item_value),
-            category: predictExpenseCategory(item.item_name), // Default category, you can change this logic
-            MemberForExpenses: generateExpenseMemberForExpense(Number(item.item_value), expenseMembers),
-        })));
-        setIsScanning(false);
-        setScanningProgress(0);
+        const isTested = true;
+        if (!isTested) {
 
-        if (Number(customData.total).toFixed(2) !== customData.items.reduce((sum: number, item: ReceiptItem) => sum + Number(item.item_value), 0).toFixed(2)) {
-            Alert.alert('Notice', 'Total amount does not match the sum of items. Please double check your receipt item.');
         }
+        else {
+            const customData = require('@/data_test/receipt.json') as ScanReceiptResult;
+            console.log('customData', customData.time);
+            console.log('customData', new Date(customData.time));
+            setTitle(customData.store_name);
+            setDate(new Date(customData.time + "T12:00:00Z"));
+            setItems(customData.items.map(item => ({
+                id: Date.now().toString() + item.item_name,
+                name: item.item_name,
+                amount: Number(item.item_value),
+                category: predictExpenseCategory(item.item_name), // Default category, you can change this logic
+                MemberForExpenses: generateExpenseMemberForExpense(Number(item.item_value), expenseMembers),
+            })));
+            setIsScanning(false);
+            setScanningProgress(0);
+
+            if (Number(customData.total).toFixed(2) !== customData.items.reduce((sum: number, item: ReceiptItem) => sum + Number(item.item_value), 0).toFixed(2)) {
+                Alert.alert('Notice', 'Total amount does not match the sum of items. Please double check your receipt item.');
+            }
+        }
+
 
         // const { status } = await ImagePicker.requestCameraPermissionsAsync();
 

@@ -1,16 +1,18 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import { Transaction } from '@/types/personal';
-import { CategoryIconMap } from '@/types/ui';
 import { formatDate } from '@/utils/ui';
 import { useRouter } from 'expo-router';
+
 interface TransactionCardProps {
     transaction: Transaction;
+    isClicked?: boolean;
 }
 
-const TransactionCard = ({ transaction }: TransactionCardProps) => {
+const TransactionCard = ({ transaction, isClicked }: TransactionCardProps) => {
     const router = useRouter();
     const handleTransactionPress = (transaction: Transaction) => {
+        if (isClicked == false) return;
         if (transaction.type === 'income') {
             router.push({
                 pathname: '/(app)/(page)/(addIncome)/[id]',
@@ -23,12 +25,9 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
                 params: { id: transaction.id, expenseType: 'personal' }
             });
         }
-        // Handle transaction press, e.g., navigate to transaction details  
-        // router.push({
-        //     pathname: '/(page)/()/[id]',
-        //     params: { id: transactionId}
-        // });
     }
+
+    const hasDescription = transaction.description && transaction.description.trim() !== '';
 
     return (
         <View>
@@ -38,8 +37,7 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
                 onPress={() => handleTransactionPress(transaction)}
             >
                 <View
-                    className={`w-10 h-10 rounded-full justify-center items-center mr-3 ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
-                        }`}
+                    className={`w-10 h-10 rounded-full justify-center items-center mr-3`}
                 >
                     <MaterialCommunityIcons
                         name={
@@ -48,24 +46,28 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
                                 : transaction.category.icon_name || 'arrow-up'
                         }
                         size={20}
-                        color={transaction.type === 'income' ? '#22c55e' : '#ef4444'}
+                        color={transaction.category.icon_color ? transaction.category.icon_color : (transaction.type === 'income' ? '#22c55e' : '#ef4444')}
                     />
                 </View>
 
-                <View className="flex-1">
-                    <View className="flex-row justify-between items-center">
+                <View className="flex-1 flex-row justify-between items-center">
+                    {/* Left column: Title and Description */}
+                    <View className="flex-1 justify-center">
                         <Text className="text-base font-medium text-gray-900">{transaction.title}</Text>
+                        {hasDescription && (
+                            <Text className="text-xs text-gray-500 mt-1">{transaction.description}</Text>
+                        )}
+                    </View>
+
+                    {/* Right column: Amount and Date */}
+                    <View className="items-end justify-center ml-3">
                         <Text
                             className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                                 }`}
                         >
                             {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
                         </Text>
-                    </View>
-
-                    <View className="flex-row justify-between items-center mt-1">
-                        <Text className="text-xs text-gray-500">{transaction.description}</Text>
-                        <Text className="text-xs text-gray-500">{formatDate(transaction.date)}</Text>
+                        <Text className="text-xs text-gray-500 mt-1">{formatDate(transaction.date)}</Text>
                     </View>
                 </View>
             </TouchableOpacity>

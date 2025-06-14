@@ -14,6 +14,7 @@ type Props = {
   totalValue: SharedValue<number>;
   font: SkFont;
   smallFont: SkFont;
+  totalText: string;
 };
 
 const DonutChart = ({
@@ -26,10 +27,10 @@ const DonutChart = ({
   radius,
   font,
   smallFont,
+  totalText
 }: Props) => {
   const array = Array.from({ length: colors.length });
   const innerRadius = radius - outerStrokeWidth / 2;
-
   const path = Skia.Path.Make();
   path.addCircle(radius, radius, innerRadius);
 
@@ -38,12 +39,74 @@ const DonutChart = ({
     [],
   );
 
-  const fontSize = font.measureText('$00');
-  const smallFontSize = smallFont.measureText('Total Spent');
+  // Dynamic font size calculation based on inner circle space
+  const dynamicFontSize = useDerivedValue(() => {
+    // Calculate the inner circle diameter (available space for text)
+    const innerCircleDiameter = (innerRadius * 2) * 0.8; // Use 80% of inner circle for safety margin
+    const maxTextWidth = innerCircleDiameter * 0.9; // 90% of available width
 
-  const textX = useDerivedValue(() => {
-    const _fontSize = font.measureText(targetText.value);
-    return radius - _fontSize.width / 2;
+    // Start with a reasonable base font size
+    let fontSize = Math.min(innerRadius / 3, 50); // Start with radius/3 or max 50px
+
+    // Test and adjust font size to fit within the inner circle
+    font.setSize(fontSize);
+    let textMeasurement = font.measureText(targetText.value);
+
+    // Reduce font size until text fits within the available width
+    while (textMeasurement.width > maxTextWidth && fontSize > 12) {
+      fontSize -= 1;
+      font.setSize(fontSize);
+      textMeasurement = font.measureText(targetText.value);
+    }
+
+    // Also check if text height fits (consider both "Total Spent" and amount)
+    const totalTextHeight = textMeasurement.height + smallFont.measureText(`Total ${totalText}`).height + 8; // 8px gap
+    const maxTextHeight = innerCircleDiameter * 0.8;
+
+    // Further reduce if total height doesn't fit
+    while (totalTextHeight > maxTextHeight && fontSize > 12) {
+      fontSize -= 1;
+      font.setSize(fontSize);
+      textMeasurement = font.measureText(targetText.value);
+    }
+
+    return fontSize;
+  }, []);
+
+  // Set the font size dynamically
+  const adjustedFont = useDerivedValue(() => {
+    font.setSize(dynamicFontSize.value);
+    return font;
+  }, []);
+
+  const fontSize = useDerivedValue(() => {
+    return adjustedFont.value.measureText(targetText.value);
+  }, []);
+
+  const smallFontSize = useDerivedValue(() => {
+    return smallFont.measureText(`Total ${totalText}`);
+  }, []);
+
+  // Calculate centered positions for both texts
+  const smallTextX = useDerivedValue(() => {
+    return radius - smallFontSize.value.width / 2;
+  }, []);
+
+  const mainTextX = useDerivedValue(() => {
+    return radius - fontSize.value.width / 2;
+  }, []);
+
+  // Calculate Y positions to center both texts vertically in the chart
+  const totalTextHeight = useDerivedValue(() => {
+    return smallFontSize.value.height + fontSize.value.height + 8; // 8px gap between texts
+  }, []);
+
+  const smallTextY = useDerivedValue(() => {
+    return radius - totalTextHeight.value / 2 + smallFontSize.value.height;
+  }, []);
+
+  const mainTextY = useDerivedValue(() => {
+    return radius + totalTextHeight.value / 2 - fontSize.value.height / 4; // Adjust for baseline
   }, []);
 
   return (
@@ -73,20 +136,23 @@ const DonutChart = ({
             />
           );
         })}
-        <Text
-          x={radius - smallFontSize.width / 2}
-          y={radius + smallFontSize.height / 2 - fontSize.height / 1.2}
-          text={'Total Spent'}
-          font={smallFont}
-          color="black"
-        />
-        <Text
-          x={textX}
-          y={radius + fontSize.height / 2}
-          text={targetText}
-          font={font}
-          color="black"
-        />
+        <>
+          <Text
+            x={smallTextX}
+            y={smallTextY}
+            text={`Total ${totalText}`}
+            font={smallFont}
+            color="black"
+          />
+          <Text
+            x={mainTextX}
+            y={mainTextY}
+            text={targetText}
+            font={adjustedFont}
+            color="black"
+          />
+        </>
+
       </Canvas>
     </View>
   );

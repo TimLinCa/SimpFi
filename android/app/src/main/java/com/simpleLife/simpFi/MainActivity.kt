@@ -1,4 +1,4 @@
-package com.timlin626.billmate
+package com.simpleLife.simpFi
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

@@ -1,4 +1,4 @@
-package com.timlin626.billmate
+package com.simpleLife.simpFi
 
 import android.app.Application
 import android.content.res.Configuration

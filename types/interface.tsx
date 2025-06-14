@@ -77,6 +77,7 @@ export interface CategoryBreakdown {
   amount: number;
   percentage: number;
   is_group: boolean;
+  group_id?: string;
 }
 
 export interface AnalyticsSummary {

@@ -6,7 +6,7 @@ import { getPersonalExpensesByMonth } from '@/utils/database/expense';
 import { getPersonalIncomesByMonth } from '@/utils/database/income';
 import { useAuth } from '@/app/context/auth';
 import { Category, PersonalExpense, PersonalIncome } from '@/types/interface';
-import TransactionCard from '@/components/ui/personal/TransactionCard'
+import TransactionCard from '@/components/ui/cards/TransactionCard'
 import { Transaction } from '@/types/personal';
 import MenuButton from '@/components/ui/home/MenuButton';
 

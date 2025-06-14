@@ -1,8 +1,8 @@
 import { View, Text, SafeAreaView, ActivityIndicator } from 'react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import SummaryCard from '@/components/ui/summary/summaryCard'
 import { supabase } from '@/utils/supabase';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnalyticsSummary, ChartData } from '@/types/interface';
 import { useAuth } from '@/app/context/auth';
 import { StatusBar } from 'expo-status-bar';
@@ -10,9 +10,11 @@ import { getMonthlyTrend } from '@/utils/database';
 import { TabSelector } from '@/components/ui/inputs';
 import { TrendBarChart, TrendLineChart } from '@/components/ui/graph';
 import { formatCurrency, formatMonthYear } from '@/utils/ui';
+import { useFocusEffect } from 'expo-router';
 
 const AnalyzeSummaryPage = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [incomeData, setIncomeData] = useState<ChartData[]>([]);
   const [expenseData, setExpenseData] = useState<ChartData[]>([]);
   const [netData, setNetData] = useState<ChartData[]>([]);
@@ -50,7 +52,29 @@ const AnalyzeSummaryPage = () => {
     enabled: !!user?.id,
   });
 
+  // Use useFocusEffect to refresh data when the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log("Refreshing data on focus");
+      // This function will run when the screen comes into focus
+      const refreshData = async () => {
+        if (user?.id) {
+          // Force clear any cached data
+          queryClient.invalidateQueries({ queryKey: ["monthlyTrends"] });
+          queryClient.invalidateQueries({ queryKey: ["analyticsSummary"] });
+
+          // Refetch both queries when screen is focused
+          await refetchTrends();
+          await refetchSummary();
+        }
+      };
+
+      refreshData();
+    }, [user?.id, refetchTrends, refetchSummary, queryClient])
+  );
+
   const onSelectedOverviewTabChanged = (tab: string) => {
+    setSelectedOverviewTab(tab);
     setSelectedYearMonth(null);
     setSelectedValue(null);
     setDiffPreviousValue(null);
@@ -60,7 +84,6 @@ const AnalyzeSummaryPage = () => {
     if (index === null || index < 0 || !monthlyGraphData) return;
     if (selectedOverviewTab === "Income") {
       const { month, income } = monthlyGraphData[index];
-      console.log(month, income);
       setSelectedYearMonth(formatMonthYear(month));
       setSelectedValue(formatCurrency(income));
       if (index > 0) {
@@ -89,7 +112,6 @@ const AnalyzeSummaryPage = () => {
     }
     else if (selectedOverviewTab === "Balance") {
       const { month, net } = monthlyGraphData[index];
-      console.log(month, net);
       setSelectedYearMonth(formatMonthYear(month));
       setSelectedValue(formatCurrency(net));
       if (index > 0) {
@@ -106,7 +128,6 @@ const AnalyzeSummaryPage = () => {
 
   const renderCharts = () => {
     if (!monthlyGraphData || monthlyGraphData.length === 0) return null;
-
     return (
       <View className="bg-white rounded-xl p-4 mb-4">
         <TabSelector tabs={overViewTabs} setActiveTab={setSelectedOverviewTab} activeTab={selectedOverviewTab} onActiveTabChange={onSelectedOverviewTabChanged} />
@@ -248,6 +269,7 @@ const AnalyzeSummaryPage = () => {
       label: trend.month.substring(0, 3),
       value: trend.net_cashflow,
     }));
+
     setIncomeData(incomeData);
     setExpenseData(expenseData);
     setNetData(netData);

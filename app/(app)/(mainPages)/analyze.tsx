@@ -14,7 +14,6 @@ import AnalyzeSummaryPage from "@/app/(app)/(page)/analyze/analyzeSummary";
 import CategoryBreakDownPage from "@/app/(app)/(page)/analyze/categoryBreakDown";
 
 const AnalyticsPage = () => {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"overview" | "income" | "expense">(
     "overview"
   );
@@ -40,20 +39,6 @@ const AnalyticsPage = () => {
     setCurrentDate(nextMonth);
   };
 
-  // Query for group analytics
-  const { data: groupAnalytics, isLoading: loadingGroups } = useQuery({
-    queryKey: ["groupAnalytics", user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const response = await supabase.rpc("get_group_analytics", {
-        p_user_id: user.id,
-        p_days: 30,
-      });
-      return response.data;
-    },
-    enabled: !!user?.id && activeTab === "overview",
-  });
-
   return (
     <View className="flex-1 bg-gray-100">
       {/* Header with back button, title and buttons */}
@@ -66,18 +51,6 @@ const AnalyticsPage = () => {
           <Text className="text-lg font-bold text-white">Analytics</Text>
         </View>
 
-        <View className="flex-row items-center w-1/3 justify-end">
-          <TouchableOpacity className="w-10 h-10 justify-center items-center">
-            <MaterialCommunityIcons name="plus" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <TouchableOpacity className="w-10 h-10 justify-center items-center">
-            <MaterialCommunityIcons
-              name="dots-vertical"
-              size={24}
-              color="#FFFFFF"
-            />
-          </TouchableOpacity>
-        </View>
       </View>
       <View className="flex-row bg-white px-4 py-2 border-b border-gray-200">
         {["overview", "income", "expense"].map((tab) => (
@@ -99,6 +72,21 @@ const AnalyticsPage = () => {
         ))}
       </View>
 
+      {/* Month Selector */}
+      {(activeTab === "income" || activeTab === "expense") && (
+        <View className="bg-white px-4 py-3 flex-row justify-between items-center border-b border-gray-200">
+          <TouchableOpacity onPress={handlePreviousMonth}>
+            <MaterialCommunityIcons name="chevron-left" size={24} color="#333" />
+          </TouchableOpacity>
+
+          <Text className="text-base font-medium text-gray-800">{currentMonth} {currentYear}</Text>
+
+          <TouchableOpacity onPress={handleNextMonth}>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#333" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       <ScrollView
         contentContainerStyle={{ paddingBottom: 60 }}
         showsVerticalScrollIndicator={false}
@@ -110,20 +98,7 @@ const AnalyticsPage = () => {
             <AnalyzeSummaryPage></AnalyzeSummaryPage>
           )}
 
-          {/* Month Selector */}
-          {(activeTab === "income" || activeTab === "expense") && (
-            <View className="bg-white px-4 py-3 flex-row justify-between items-center border-b border-gray-200">
-              <TouchableOpacity onPress={handlePreviousMonth}>
-                <MaterialCommunityIcons name="chevron-left" size={24} color="#333" />
-              </TouchableOpacity>
 
-              <Text className="text-base font-medium text-gray-800">{currentMonth} {currentYear}</Text>
-
-              <TouchableOpacity onPress={handleNextMonth}>
-                <MaterialCommunityIcons name="chevron-right" size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
-          )}
           {/* Income Charts */}
           {activeTab === "income" && (
             <CategoryBreakDownPage currentDate={currentDate} categoryType="income" />

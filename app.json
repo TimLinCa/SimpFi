@@ -1,22 +1,26 @@
 {
   "expo": {
-    "name": "billmate",
-    "slug": "billmate",
+    "name": "SimpFi",
+    "slug": "SimpFi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Logo.jpg",
-    "scheme": "com.simplelife.billmate",
+    "scheme": "com.simpleLife.simpFi",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.simpleLife.simpFi",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/Logo.jpg",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.timlin626.billmate"
+      "package": "com.simpleLife.simpFi"
     },
     "web": {
       "bundler": "metro",
@@ -37,10 +41,16 @@
       [
         "expo-asset",
         {
-          "assets": ["./assets/classifier/category_classifier.json"]
+          "assets": [
+            "./assets/classifier/category_classifier.json"
+          ]
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "@react-native-google-signin/google-signin"
+      ],
+      "react-native-document-scanner-plugin"
     ],
     "experiments": {
       "typedRoutes": true
@@ -50,9 +60,8 @@
         "origin": false
       },
       "eas": {
-        "projectId": "288a4703-262f-4462-ab63-158122c370e2"
+        "projectId": "1e9cfe97-1523-44b3-8a59-f1d8e50023a3"
       }
-    },
-    "owner": "timlin626"
+    }
   }
 }
