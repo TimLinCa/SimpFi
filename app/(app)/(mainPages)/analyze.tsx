@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/app/context/auth";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -20,8 +15,18 @@ const AnalyticsPage = () => {
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const monthNames: string[] = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const currentMonth: string = monthNames[currentDate.getMonth()];
   const currentYear: number = currentDate.getFullYear();
@@ -50,21 +55,22 @@ const AnalyticsPage = () => {
         <View className="w-1/3 items-center justify-center">
           <Text className="text-lg font-bold text-white">Analytics</Text>
         </View>
-
       </View>
       <View className="flex-row bg-white px-4 py-2 border-b border-gray-200">
         {["overview", "income", "expense"].map((tab) => (
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab as typeof activeTab)}
-            className={`flex-1 py-2 ${activeTab === tab ? "border-b-2 border-blue-500" : ""
-              }`}
+            className={`flex-1 py-2 ${
+              activeTab === tab ? "border-b-2 border-blue-500" : ""
+            }`}
           >
             <Text
-              className={`text-center capitalize ${activeTab === tab
-                ? "text-blue-500 font-semibold"
-                : "text-gray-500"
-                }`}
+              className={`text-center capitalize ${
+                activeTab === tab
+                  ? "text-blue-500 font-semibold"
+                  : "text-gray-500"
+              }`}
             >
               {tab}
             </Text>
@@ -76,13 +82,23 @@ const AnalyticsPage = () => {
       {(activeTab === "income" || activeTab === "expense") && (
         <View className="bg-white px-4 py-3 flex-row justify-between items-center border-b border-gray-200">
           <TouchableOpacity onPress={handlePreviousMonth}>
-            <MaterialCommunityIcons name="chevron-left" size={24} color="#333" />
+            <MaterialCommunityIcons
+              name="chevron-left"
+              size={24}
+              color="#333"
+            />
           </TouchableOpacity>
 
-          <Text className="text-base font-medium text-gray-800">{currentMonth} {currentYear}</Text>
+          <Text className="text-base font-medium text-gray-800">
+            {currentMonth} {currentYear}
+          </Text>
 
           <TouchableOpacity onPress={handleNextMonth}>
-            <MaterialCommunityIcons name="chevron-right" size={24} color="#333" />
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={24}
+              color="#333"
+            />
           </TouchableOpacity>
         </View>
       )}
@@ -92,19 +108,24 @@ const AnalyticsPage = () => {
         showsVerticalScrollIndicator={false}
         className="flex-1"
       >
-        <View >
+        <View>
           {/* Summary Cards */}
           {activeTab === "overview" && (
             <AnalyzeSummaryPage></AnalyzeSummaryPage>
           )}
 
-
           {/* Income Charts */}
           {activeTab === "income" && (
-            <CategoryBreakDownPage currentDate={currentDate} categoryType="income" />
+            <CategoryBreakDownPage
+              currentDate={currentDate}
+              categoryType="income"
+            />
           )}
           {activeTab === "expense" && (
-            <CategoryBreakDownPage currentDate={currentDate} categoryType="expense" />
+            <CategoryBreakDownPage
+              currentDate={currentDate}
+              categoryType="expense"
+            />
           )}
         </View>
       </ScrollView>

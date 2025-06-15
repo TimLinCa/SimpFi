@@ -50,7 +50,14 @@
       [
         "@react-native-google-signin/google-signin"
       ],
-      "react-native-document-scanner-plugin"
+      [
+        "react-native-document-scanner-plugin",
+        {
+          "cameraPermission": "We need camera access, so you can scan receipts."
+        }
+      ],
+      "expo-build-properties",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
