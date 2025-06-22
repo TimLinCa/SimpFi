@@ -8,6 +8,7 @@ import {
   Platform,
   Modal,
   Alert,
+  Image,
   PermissionsAndroid,
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -30,6 +31,7 @@ import {
   getPersonalExpenseById,
   addOrUpdateGroupExpense,
   getGroupExpenseById,
+  getCategorySuggestion
 } from "@/utils/database/expense";
 import { useAuth } from "@/app/context/auth";
 import { getUserGroups } from "@/utils/database/group";
@@ -41,7 +43,7 @@ import {
   DateSelector,
 } from "@/components/ui/inputs";
 import ExpenseItemList from "@/components/ui/group/ExpenseItemList";
-import DocumentScanner from "react-native-document-scanner-plugin";
+import { performOCR, askMistralForAnalysisReceipt } from "@/utils/mistraAI";
 
 interface AddExpensePageProps {
   expenseId?: string;
@@ -194,12 +196,28 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
         );
         return;
       }
-      const { scannedImages } = await DocumentScanner.scanDocument();
-      console.log("scannedImages", scannedImages);
-      if (scannedImages && scannedImages.length > 0) {
-        // set the img src, so we can view the first scanned image
-        setScannedImage(scannedImages[0]);
-      }
+
+      const testImage = require("@/data_test/imgs/113218.jpg");
+      const imageUri = Image.resolveAssetSource(testImage).uri;
+      const ocrResult = await performOCR(imageUri);
+      const analysisResult = await askMistralForAnalysisReceipt(JSON.stringify(ocrResult));
+      const parsed = JSON.parse(analysisResult);
+      setTitle(parsed.store_name);
+      setDate(new Date(parsed.time));
+      setItems(
+        parsed.items.map(async (item: any) => ({
+          id: Date.now().toString() + item.item_name,
+          name: item.item_name,
+          amount: Number(item.item_value),
+          category: await predictExpenseCategory(item.item_name), // Default category, you can change this logic
+          MemberForExpenses: generateExpenseMemberForExpense(
+            Number(item.item_value),
+            expenseMembers
+          ),
+        }))
+      );
+      setIsScanning(false);
+      setScanningProgress(0);
     } else {
       const customData =
         require("@/data_test/receipt.json") as ScanReceiptResult;
@@ -208,16 +226,16 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
       setTitle(customData.store_name);
       setDate(new Date(customData.time + "T12:00:00Z"));
       setItems(
-        customData.items.map((item) => ({
+        await Promise.all(customData.items.map(async (item) => ({
           id: Date.now().toString() + item.item_name,
           name: item.item_name,
           amount: Number(item.item_value),
-          category: predictExpenseCategory(item.item_name), // Default category, you can change this logic
+          category: await predictExpenseCategory(item.item_name), // Default category, you can change this logic
           MemberForExpenses: generateExpenseMemberForExpense(
             Number(item.item_value),
             expenseMembers
           ),
-        }))
+        })))
       );
       setIsScanning(false);
       setScanningProgress(0);
@@ -426,31 +444,27 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
           <View className="bg-white p-4 border-b border-gray-200">
             <View className="flex-row bg-gray-100 rounded-full overflow-hidden">
               <TouchableOpacity
-                className={`flex-1 py-2 px-4 items-center ${
-                  expenseType === "personal"
-                    ? "bg-primary-blue"
-                    : "bg-transparent"
-                }`}
+                className={`flex-1 py-2 px-4 items-center ${expenseType === "personal"
+                  ? "bg-primary-blue"
+                  : "bg-transparent"
+                  }`}
                 onPress={() => setExpenseType("personal")}
               >
                 <Text
-                  className={`font-bold ${
-                    expenseType === "personal" ? "text-white" : "text-gray-500"
-                  }`}
+                  className={`font-bold ${expenseType === "personal" ? "text-white" : "text-gray-500"
+                    }`}
                 >
                   Personal
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className={`flex-1 py-2 px-4 items-center ${
-                  expenseType === "group" ? "bg-primary-blue" : "bg-transparent"
-                }`}
+                className={`flex-1 py-2 px-4 items-center ${expenseType === "group" ? "bg-primary-blue" : "bg-transparent"
+                  }`}
                 onPress={() => setExpenseType("group")}
               >
                 <Text
-                  className={`font-bold ${
-                    expenseType === "group" ? "text-white" : "text-gray-500"
-                  }`}
+                  className={`font-bold ${expenseType === "group" ? "text-white" : "text-gray-500"
+                    }`}
                 >
                   Group
                 </Text>
@@ -548,7 +562,7 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
       const remainder =
         100 -
         Math.floor(100 / selectedGroup.members.length) *
-          selectedGroup.members.length;
+        selectedGroup.members.length;
       if (remainder > 0) {
         for (let i = 0; i < remainder; i++) {
           if (processedMembers[i]) {
@@ -576,11 +590,11 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
     }
   }
 
-  function predictExpenseCategory(text: string): Category {
-    const predictNewCategory = classifyExpense(text);
+  async function predictExpenseCategory(text: string): Promise<Category> {
+    const predictNewCategory = await getCategorySuggestion(text);
     if (predictNewCategory) {
       const newCategory = expenseCategories.find(
-        (cat) => cat.name === predictNewCategory
+        (cat) => cat.name === predictNewCategory.category_name
       );
       return newCategory ? newCategory : expenseCategories[0];
     } else {

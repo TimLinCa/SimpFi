@@ -15,7 +15,7 @@
     "typeRoots": [
       "./node_modules/@types",
       "./types/json.d.ts"
-    ],
+    ]
   },
   "include": [
     "**/*.ts",

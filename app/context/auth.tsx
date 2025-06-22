@@ -6,6 +6,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from "@react-native-google-signin/google-signin";
+import { updateUserProfile } from "@/utils/database/account";
 
 // Define the shape of our auth context
 type AuthContextData = {
@@ -29,9 +30,9 @@ const AuthContext = createContext<AuthContextData>({
   loading: true,
   signIn: async () => ({ error: null }),
   signUp: async () => ({ error: null, data: null }),
-  signOut: async () => {},
+  signOut: async () => { },
   isAuthenticated: false,
-  signInWithGoogle: async () => {},
+  signInWithGoogle: async () => { },
 });
 
 // Hook to use the auth context
@@ -67,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Auth functions
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -112,40 +113,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token: userInfo.data.idToken,
       });
       if (data?.user) {
-        const { data: existingProfile, error: checkError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("id", data.user.id)
-          .maybeSingle();
-
-        if (checkError) {
-          console.error("Unexpected error checking profile:", checkError);
-          return;
-        }
-
-        if (!existingProfile) {
-          // Profile doesn't exist, create it
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .insert({
-              id: data.user.id,
-              username: data.user.user_metadata.full_name,
-              avatar_url: data.user.user_metadata.avatar_url,
-            });
-
-          if (profileError) {
-            console.error("Unexpected error creating profile:");
-          }
-        } else {
-          const { error: updateError } = await supabase
-            .from("profiles")
-            .update({ avatar_url: data.user.user_metadata.avatar_url })
-            .eq("id", data.user.id);
-
-          if (updateError) {
-            console.error("Unexpected error updating profile:", updateError);
-          }
-        }
+        await updateUserProfile(
+          data.user.id,
+          data.user.user_metadata.full_name,
+          data.user.user_metadata.avatar_url
+        );
       }
     } catch (error: any) {
       console.error("Google Sign In Error:", error);

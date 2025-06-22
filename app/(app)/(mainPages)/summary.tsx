@@ -22,7 +22,8 @@ import { getAllGroupDetails } from "@/utils/database/group";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
+import { registerForPushNotificationsAsync } from "@/utils/database/notification";
+import { updateUserProfile } from "@/utils/database/account";
 // Main App Component using the custom components
 
 interface SummaryData {
@@ -98,6 +99,17 @@ const MobileSummaryPage = () => {
 
   const isFetching = isFetchingGroupDetails || isFetchingSummaryData;
 
+  useEffect(() => {
+    const registerForPushNotifications = async () => {
+      const token = await registerForPushNotificationsAsync();
+      if (token && user?.id) {
+        // Update the user's profile with the push token
+        await updateUserProfile(user.id, undefined, undefined, token);
+      }
+    };
+    registerForPushNotifications();
+  }, [user?.id]);
+
   // Use useFocusEffect to refresh data when the screen comes into focus
   useFocusEffect(
     useCallback(() => {
@@ -120,7 +132,6 @@ const MobileSummaryPage = () => {
       };
 
       refreshData();
-
       // Return a cleanup function (optional)
       return () => {
         // Any cleanup code if needed

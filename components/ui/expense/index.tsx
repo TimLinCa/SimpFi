@@ -6,7 +6,7 @@ import { formatCurrency } from '@/utils/ui'
 import { useAuth } from '@/app/context/auth'
 import { Category, ExpenseItem, MemberForExpense } from '@/types/interface'
 import SelectDropdown from 'react-native-select-dropdown'
-import { classifyExpense } from '@/utils/categorizeExpense';
+import { getCategorySuggestion } from '@/utils/database/expense'
 
 interface ExpenseParticipantsProps {
     expenseData: GroupDetailExpense
@@ -133,13 +133,17 @@ export const ExpenseItemOverlay: React.FC<ExpenseItemOverlayProps> = ({
 
     const onItemNameChange = (text: string) => {
         setItemName(text);
-        const newCategory = classifyExpense(text);
-        if (newCategory) {
-            setSelectedCategory(expenseCategories.find(cat => cat.name === newCategory));
-        }
     }
 
-    const updateTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+    const onEndEditing = async () => {
+        const category = await getCategorySuggestion(itemName);
+        if (category) {
+            setSelectedCategory(expenseCategories.find(cat => cat.name === category.category_name));
+        }
+        else {
+            setSelectedCategory(expenseCategories.find(cat => cat.name === "Other"));
+        }
+    }
 
     // Function to toggle member selection
     const toggleMemberSelection = (memberId: string) => {
@@ -383,6 +387,7 @@ export const ExpenseItemOverlay: React.FC<ExpenseItemOverlayProps> = ({
                         <TextInput
                             className="bg-gray-100 p-3 rounded-lg text-gray-800"
                             value={itemName}
+                            onEndEditing={onEndEditing}
                             onChangeText={onItemNameChange}
                             placeholder="e.g., Main Course, Drinks"
                             placeholderTextColor="#9ca3af"
@@ -406,7 +411,7 @@ export const ExpenseItemOverlay: React.FC<ExpenseItemOverlayProps> = ({
                                         {
                                             selectedCategory ? (
                                                 <View className='flex-row justify-center items-center'>
-                                                    <MaterialCommunityIcons name={selectedCategory.icon_name} className="text-2xl ml-1 mr-3" />
+                                                    <MaterialCommunityIcons name={selectedCategory.icon_name} color={selectedCategory.icon_color ? selectedCategory.icon_color : 'black'} className="text-2xl ml-1 mr-3" />
                                                     <Text className="flex-1 text-black">
                                                         {(selectedCategory && selectedCategory.name)}
                                                     </Text>
@@ -424,7 +429,7 @@ export const ExpenseItemOverlay: React.FC<ExpenseItemOverlayProps> = ({
                             renderItem={(item, index, isSelected) => {
                                 return (
                                     <View className={`w-full flex-row px-3 justify-center items-center py-2 ${isSelected ? 'bg-gray-300' : ''}`}>
-                                        <MaterialCommunityIcons name={item.icon_name} className="text-2xl mr-4" />
+                                        <MaterialCommunityIcons name={item.icon_name} color={item.icon_color ? item.icon_color : 'black'} className="text-2xl mr-4" />
                                         <Text className="flex-1 text-lg font-medium text-gray-800">{item.name}</Text>
                                     </View>
                                 );

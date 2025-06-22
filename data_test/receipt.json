@@ -17,59 +17,8 @@
             "item_name": "NNS THN SLS CHKN"
         },
         {
-            "item_value": "10.20",
-            "item_quantity": "2",
-            "item_name": "NNS EGGS LG"
-        },
-        {
-            "item_value": "3.49",
-            "item_name": "SILK UN UNSWEET RO"
-        },
-        {
-            "item_value": "0.25",
-            "item_name": "RECYCLING FEE"
-        },
-        {
-            "item_value": "0.25",
-            "item_name": "DEPOSIT 1"
-        },
-        {
-            "item_value": "5.00",
-            "item_name": "NNN LIMES 907G"
-        },
-        {
-            "item_value": "2.97",
-            "item_name": "LETTUCE/ICEBERG"
-        },
-        {
-            "item_value": "7.96",
-            "item_quantity": "2",
-            "item_name": "AVOCADO BAG"
-        },
-        {
-            "item_value": "9.99",
-            "item_name": "MBLE BACON CHKN"
-        },
-        {
-            "item_value": "3.76",
-            "item_quantity": "2",
-            "item_name": "NN W BREAD"
-        },
-        {
-            "item_value": "0.25",
-            "item_name": "RECYCLING FEE"
-        },
-        {
-            "item_value": "0.12",
-            "item_name": "DEPOSIT 1"
-        },
-        {
-            "item_value": "6.99",
-            "item_name": "VSN LOTION COCO"
-        },
-        {
-            "item_value": "16.49",
-            "item_name": "HTRP ST LTN 550"
+            "item_value": "4.02",
+            "item_name": "Tax"
         }
     ]
 }

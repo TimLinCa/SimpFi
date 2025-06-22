@@ -103,3 +103,10 @@ export interface ChartData {
   value: number;
   label: string;
 }
+
+export interface CategorySuggestion {
+  category_id: string;
+  category_name: string;
+  confidence_score: number;
+  matched_keyword: string;
+}

@@ -1,4 +1,4 @@
-module.exports = function(api) {
+module.exports = function (api) {
     api.cache(true);
 
     return {
@@ -8,7 +8,6 @@ module.exports = function(api) {
 
         plugins: [["module-resolver", {
             root: ["./"],
-
             alias: {
                 "@": "./",
                 "tailwind.config": "./tailwind.config.js"

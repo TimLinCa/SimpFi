@@ -1,15 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@supabase/supabase-js'
-import { makeRedirectUri } from "expo-auth-session";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
 import * as WebBrowser from "expo-web-browser";
 import * as SecureStore from 'expo-secure-store';
-import * as Linking from "expo-linking";
 
-const supabaseUrl = "https://yxvjolnvyxluspodryhl.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmpvbG52eXhsdXNwb2RyeWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2OTU4NzUsImV4cCI6MjA1ODI3MTg3NX0.WAjZBWHunFSWHkWZeZI6wV7E0SAHFIKi4C2Ezu_W_bU"
-WebBrowser.maybeCompleteAuthSession(); // required for web only
-const redirectTo = makeRedirectUri();
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+WebBrowser.maybeCompleteAuthSession();
 
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
@@ -38,6 +35,10 @@ const createSessionFromUrl = async (url: string) => {
   if (error) throw error;
   return data.session;
 };
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Supabase URL and Anon Key must be set in environment variables');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

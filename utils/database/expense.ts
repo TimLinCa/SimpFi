@@ -1,4 +1,4 @@
-import { PersonalExpense, ExpenseItem, Category } from "@/types/interface";
+import { PersonalExpense, ExpenseItem, Category, CategorySuggestion } from "@/types/interface";
 import { GroupDetailExpense } from "@/types/group";
 import { supabase } from "@/utils/supabase";
 /**
@@ -341,3 +341,57 @@ export function get_group_expense_by_id_for_user(
     }
   });
 }
+
+/**
+ * Gets a category suggestion for an expense item based on its name/description
+ * Uses the classify_expense database function to analyze the item name
+ *
+ * @param itemName - The name or description of the expense item
+ * @returns Promise resolving to a category suggestion or null if no match found
+ */
+export const getCategorySuggestion = async (
+  itemName: string
+): Promise<CategorySuggestion | null> => {
+  try {
+    if (!itemName?.trim()) {
+      return null;
+    }
+
+    const { data, error } = await supabase.rpc("classify_expense", {
+      expense_description: itemName.trim(),
+    });
+
+    if (error) {
+      console.error("Error getting category suggestion:", error);
+      return null;
+    }
+
+    // The RPC function returns an array, get the first result
+    return data?.[0] || null;
+  } catch (error) {
+    console.error("Unexpected error getting category suggestion:", error);
+    return null;
+  }
+};
+
+/**
+ * Gets category suggestions for multiple expense items in batch
+ * Useful for processing multiple items efficiently
+ *
+ * @param itemNames - Array of item names/descriptions
+ * @returns Promise resolving to array of suggestions (null for items with no match)
+ */
+export const getBatchCategorySuggestions = async (
+  itemNames: string[]
+): Promise<(CategorySuggestion | null)[]> => {
+  try {
+    const suggestions = await Promise.all(
+      itemNames.map(itemName => getCategorySuggestion(itemName))
+    );
+
+    return suggestions;
+  } catch (error) {
+    console.error("Error getting batch category suggestions:", error);
+    return itemNames.map(() => null);
+  }
+};
