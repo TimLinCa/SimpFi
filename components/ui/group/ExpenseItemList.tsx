@@ -72,8 +72,8 @@ const ExpenseItemList = ({
                             <View className="flex-row items-center flex-1">
                                 {/* Category icon for all expense types */}
                                 {item.category && (
-                                    <View className="bg-blue-100 w-8 h-8 rounded-full items-center justify-center mr-3">
-                                        <MaterialCommunityIcons name={expenseCategories.find(cat => cat.name == item.category.name)?.icon_name || 'dots-horizontal-circle'} size={16} color="#3b82f6" />
+                                    <View className=" w-8 h-8 rounded-full items-center justify-center mr-3">
+                                        <MaterialCommunityIcons name={expenseCategories.find(cat => cat.name == item.category.name)?.icon_name || 'dots-horizontal-circle'} size={16} color={item.category.icon_color ? item.category.icon_color : '#3b82f6'} />
                                     </View>
                                 )}
 

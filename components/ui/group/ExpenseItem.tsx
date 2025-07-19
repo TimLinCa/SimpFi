@@ -25,8 +25,8 @@ const ExpenseItem = ({ item }: ExpenseItemProps) => {
             className="flex-row items-center p-4 bg-white rounded-lg shadow-sm mb-3"
             onPress={() => ItemOnPressed(item.id)}
         >
-            <View className="mr-3 bg-gray-100 rounded-full p-2">
-                <MaterialCommunityIcons name="receipt" size={24} color="#3b82f6" />
+            <View className="mr-3 rounded-full p-2">
+                <MaterialCommunityIcons name={item.category.icon_name} size={24} color={item.category.icon_color ? item.category.icon_color : "#000000"} />
             </View>
 
             <View className="flex-1">

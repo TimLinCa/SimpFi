@@ -6,7 +6,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from "@react-native-google-signin/google-signin";
-import { updateUserProfile } from "@/utils/database/account";
+import { updateUserProfile, isProfileExists } from "@/utils/database/account";
 
 // Define the shape of our auth context
 type AuthContextData = {
@@ -112,7 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         provider: "google",
         token: userInfo.data.idToken,
       });
-      if (data?.user) {
+
+      if (data?.user && !(await isProfileExists(data.user.id))) {
         await updateUserProfile(
           data.user.id,
           data.user.user_metadata.full_name,

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "188388928488",
+    "project_id": "simpfi-2b23f",
+    "storage_bucket": "simpfi-2b23f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:188388928488:android:d9a2144dcac7caf87e925d",
+        "android_client_info": {
+          "package_name": "com.simpleLife.simpFi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5EDD5iOwvFkhsRDPbPQRujMxtt2pcRuI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

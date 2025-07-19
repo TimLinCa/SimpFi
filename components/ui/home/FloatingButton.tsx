@@ -169,7 +169,7 @@ const FloatingButton = () => {
                             router.push('/(app)/(page)/(addTransaction)/addTransaction');
                         }}
                     >
-                        <MaterialCommunityIcons name="cart-outline" size={24} color="#2196F3" />
+                        <MaterialCommunityIcons name="swap-horizontal" size={24} color="#2196F3" />
                         <View style={styles.labelContainer}>
                             <Text style={styles.buttonLabel}>Add Transaction</Text>
                         </View>

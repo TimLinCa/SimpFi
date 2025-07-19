@@ -3,16 +3,28 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldPlaySound: false,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldShowAlert: true
+    }),
+});
+
 export async function sendPushNotification(expoPushToken: string) {
     const message = {
         to: expoPushToken,
         sound: 'default',
         title: 'Original Title',
-        body: 'And here is the body!',
+        body: 'Hey!',
         data: { someData: 'goes here' },
     };
 
-    await fetch('https://exp.host/--/api/v2/push/send', {
+    console.log('Sending push notification:', message);
+
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
         headers: {
             Accept: 'application/json',
@@ -21,6 +33,8 @@ export async function sendPushNotification(expoPushToken: string) {
         },
         body: JSON.stringify(message),
     });
+
+    console.log('Push notification response:', response);
 }
 
 function handleRegistrationError(errorMessage: string) {
@@ -38,34 +52,36 @@ export async function registerForPushNotificationsAsync(): Promise<string | void
         });
     }
 
-    if (Device.isDevice) {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== 'granted') {
-            const { status } = await Notifications.requestPermissionsAsync();
-            finalStatus = status;
-        }
-        if (finalStatus !== 'granted') {
-            handleRegistrationError('Permission not granted to get push token for push notification!');
-            return;
-        }
-        const projectId =
-            Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-        if (!projectId) {
-            handleRegistrationError('Project ID not found');
-        }
-        try {
-            const pushTokenString = (
-                await Notifications.getExpoPushTokenAsync({
-                    projectId,
-                })
-            ).data;
-            console.log(pushTokenString);
-            return pushTokenString;
-        } catch (e: unknown) {
-            handleRegistrationError(`${e}`);
-        }
-    } else {
-        handleRegistrationError('Must use physical device for push notifications');
+    console.log('Registering for push notifications on a physical device');
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
     }
+    if (finalStatus !== 'granted') {
+        console.error('Permission not granted for push notifications');
+        handleRegistrationError('Permission not granted to get push token for push notification!');
+        return;
+    }
+    const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+        console.error('Project ID not found in Expo config');
+        handleRegistrationError('Project ID not found');
+    }
+    try {
+        console.log('Project ID:', projectId);
+        const pushTokenString = (
+            await Notifications.getExpoPushTokenAsync({
+                projectId,
+            })
+        ).data;
+        console.log(pushTokenString);
+        return pushTokenString;
+    } catch (e: unknown) {
+        console.error('Error getting Expo push token:', e);
+        handleRegistrationError(`${e}`);
+    }
+
 }

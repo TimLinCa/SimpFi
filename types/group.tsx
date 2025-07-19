@@ -1,4 +1,4 @@
-import { ExpenseItem } from '@/types/interface'
+import { Category, ExpenseItem } from '@/types/interface'
 export interface Member {
     id: string;
     name: string;
@@ -13,7 +13,8 @@ export interface GroupExpense {
     amount: number;
     date: Date;
     paidBy: Member;
-    note?: string,
+    note?: string;
+    category: Category;
     participantsNumber: number;
 }
 

@@ -65,12 +65,14 @@ export const performOCR = async (imagePath: string): Promise<Array<OCRPageObject
     if (!base64Image) {
         throw new Error("Failed to encode image");
     }
+    console.log("Processing OCR for image with base64 length:", base64Image.length);
     const ocrResult = await processOCR(base64Image);
     return ocrResult.pages;
 }
 
 export const askMistralForAnalysisReceipt = async (ocrResult: string): Promise<string> => {
-    const context = "You are analyzing a receipt and need to convert it to a specific JSON format. No other context is needed for this task. Please ensure the output is in the exact format specified below. The tax should be included as a separate item with the name 'Tax'. The date should be in the format 'YYYY-MM-DD'. Only the json format is expected in the response, without any additional text or explanation.";
+    console.log("Asking Mistral for receipt analysis with OCR result:", ocrResult);
+    const context = "You are analyzing a receipt and need to convert it to a specific JSON format. No other context is needed for this task. Please ensure the output is in the exact format specified below. If there is no tax, no need to include it, otherwise the tax should be included as a separate item with the name 'Tax'. The date should be in the format 'YYYY-MM-DD'. Only the json format is expected in the response, without any additional text or explanation and the item name must convert to human readable names. The sum of item_value should match the total value in the receipt. If there is no store name, use 'Unknown Store' as the default store name.";
     const question = `Analyze this receipt and convert it to the following JSON format:
     {
         "total": "6.8",
@@ -96,11 +98,12 @@ export const askMistralForAnalysisReceipt = async (ocrResult: string): Promise<s
     ${ocrResult}`;
 
     const AssistantMessage = await askMistral(question, context);
+    console.log("Received response from Mistral:", AssistantMessage);
     if (!AssistantMessage || !AssistantMessage.content) {
         throw new Error("Unexpected error happened, please try again later.");
     }
     if (typeof AssistantMessage.content === "string") {
-        // It's a string, return it directly
+        console.log("Assistant response content:", AssistantMessage.content);
         return AssistantMessage.content;
     } else {
         throw new Error("Unexpected error happened, please try again later.");
@@ -110,12 +113,12 @@ export const askMistralForAnalysisReceipt = async (ocrResult: string): Promise<s
 export const askMistral = async (question: string, context: string): Promise<AssistantMessage> => {
     try {
         const response = await client.chat.complete({
-            model: "open-mistral-7b",
+            model: "open-mistral-nemo",
             messages: [
                 { role: "user", content: context },
                 { role: "user", content: question }
             ],
-            maxTokens: 1000,
+            maxTokens: 10000,
             temperature: 0.2
         });
         if (!response.choices || response.choices.length === 0 || response.choices[0].message.content == undefined || response.choices[0].message.content == null) {

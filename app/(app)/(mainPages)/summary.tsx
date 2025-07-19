@@ -22,8 +22,9 @@ import { getAllGroupDetails } from "@/utils/database/group";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { registerForPushNotificationsAsync } from "@/utils/database/notification";
+import { registerForPushNotificationsAsync, sendPushNotification } from "@/utils/database/notification";
 import { updateUserProfile } from "@/utils/database/account";
+
 // Main App Component using the custom components
 
 interface SummaryData {
@@ -74,6 +75,14 @@ const MobileSummaryPage = () => {
       setGroupDetailForShow(groupDetails);
     }
   };
+
+  const sendNotification = () => {
+    if (!pushToken) {
+      console.error("Push token is not available");
+      return;
+    }
+    sendPushNotification(pushToken);
+  };
   // Define the queries
   const {
     data: groupDetails,
@@ -98,11 +107,13 @@ const MobileSummaryPage = () => {
   });
 
   const isFetching = isFetchingGroupDetails || isFetchingSummaryData;
-
+  const [pushToken, setPushToken] = useState<string | null>(null);
   useEffect(() => {
     const registerForPushNotifications = async () => {
+      console.log("Registering for push notifications...");
       const token = await registerForPushNotificationsAsync();
       if (token && user?.id) {
+        setPushToken(token);
         // Update the user's profile with the push token
         await updateUserProfile(user.id, undefined, undefined, token);
       }
@@ -254,6 +265,9 @@ const MobileSummaryPage = () => {
             <Text className="text-lg font-semibold text-gray-900">
               Your Groups
             </Text>
+            {/* <TouchableOpacity onPress={sendNotification} className="px-3 py-1">
+              <Text className="text-blue-500 font-medium">NotificationTest</Text>
+            </TouchableOpacity> */}
             <TouchableOpacity onPress={handleAllPress} className="px-3 py-1">
               <Text className="text-blue-500 font-medium">See All</Text>
             </TouchableOpacity>

@@ -4,9 +4,9 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { ExpenseItem, TransactionItem, MemberWithBalanceItem, FloatingButton, InvitationOverlay, GroupIconEditOverlay } from '@/components/ui/group';
 import { TransactionData, GroupExpense, Member, Group, GroupDetail, GroupMembers, MemberWithBalance } from "@/types/group"
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getGroupDetails } from '@/utils/database/group';
+import { getGroupDetails, leaveGroup } from '@/utils/database/group';
 import { useAuth } from '@/app/context/auth';
-import {useRefreshOnFocus} from '@/hooks';
+import { useRefreshOnFocus } from '@/hooks';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface GroupDetailProps {
@@ -17,19 +17,19 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
     const router = useRouter();
     const { user } = useAuth();
     const queryClient = useQueryClient();
-    const { 
-        data: groupData, 
+    const {
+        data: groupData,
         refetch: refetchGroupData,
-        isFetching, 
-        isLoading, 
-        isError, 
+        isFetching,
+        isLoading,
+        isError,
         error } = useQuery(
-        {
-            queryKey: ['groupDetail', groupId],
-            queryFn: fetchGroupDetail,
-            enabled: !!user,
-        }
-    )
+            {
+                queryKey: ['groupDetail', groupId],
+                queryFn: fetchGroupDetail,
+                enabled: !!user,
+            }
+        )
 
     useRefreshOnFocus('groupDetail', refetchGroupData);
 
@@ -51,9 +51,22 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
         setLeaveModalVisible(true);
     };
 
-    const confirmLeaveGroup = () => {
+    const confirmLeaveGroup = async () => {
         console.log('Leaving group');
         setLeaveModalVisible(false);
+        if (groupData?.transactions.some(transaction => transaction.amount !== 0)) {
+            alert("You cannot leave the group while there are pending transactions.");
+            return;
+        }
+        if (!user || !groupId) {
+            alert("You must be logged in to leave a group.");
+            return;
+        }
+        const response = await leaveGroup(user.id, groupId);
+        if (!response.success) {
+            alert("Failed to leave group: " + response.message);
+            return;
+        }
         // API call to leave the group
         router.back(); // Navigate back after leaving
     };
@@ -158,8 +171,6 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
                         >
                             <Text className="text-red-500">Leave Group</Text>
                         </TouchableOpacity>
-
-
                     </View>
                 )}
 
@@ -329,17 +340,17 @@ const GroupDetailPage: React.FC<GroupDetailProps> = ({ groupId }) => {
 
     const refreshGroupData = useCallback(async (): Promise<void> => {
         if (user?.id) {
-          try {
-            // Force clear any cached data
-            queryClient.invalidateQueries({ queryKey: ['groupDetail'] });
-            
-            // Refetch data
-            await refetchGroupData();
-          } catch (error) {
-            console.error('Error refreshing data:', error);
-          }
+            try {
+                // Force clear any cached data
+                queryClient.invalidateQueries({ queryKey: ['groupDetail'] });
+
+                // Refetch data
+                await refetchGroupData();
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+            }
         }
-      }, [user, queryClient, refetchGroupData]);
+    }, [user, queryClient, refetchGroupData]);
 };
 
 export default GroupDetailPage;

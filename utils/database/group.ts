@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase';
 import { Group, GroupMembers, GroupDetail } from '@/types/group';
+import { Category } from '@/types/interface';
 /**
  * Creates a new group and adds the current user as a member
  * 
@@ -101,8 +102,6 @@ export const getGroupDetails = async (groupId: string, userId: string): Promise<
         iconColor: data.group.icon_color || ''
     }
 
-
-
     // Transform the data to match the GroupDetail interface
     const groupDetail: GroupDetail = {
         group: group,
@@ -124,6 +123,12 @@ export const getGroupDetails = async (groupId: string, userId: string): Promise<
                 name: expense.paid_by.username,
                 email: '', // Email is not returned from the RPC function
                 avatar: expense.paid_by.avatar_url
+            },
+            category: {
+                id: "1",
+                name: expense.category.name,
+                icon_name: expense.category.icon_name,
+                icon_color: expense.category.icon_color
             },
             participantsNumber: expense.participants // Now using the participants count from the RPC
         })),
@@ -241,6 +246,38 @@ export const joinGroup = async (userId: string, invitationCode: string): Promise
     return data as JoinGroupResponse;
 };
 
+export const leaveGroup = async (userId: string, groupId: string): Promise<LeaveGroupResponse> => {
+    const { data, error } = await supabase
+        .rpc('leave_group', {
+            p_user_id: userId,
+            p_group_id: groupId
+        });
+
+    if (error) {
+        console.error('Error leaving group:', error);
+        return {
+            success: false,
+            message: error.message || 'An error occurred while leaving the group',
+            group_deleted: false
+        };
+    }
+
+    if (!data) {
+        console.error('No data returned from leave_group RPC');
+        return {
+            success: false,
+            message: 'No data returned from leave_group RPC',
+            group_deleted: false
+        };
+    }
+
+    return {
+        success: data.success,
+        message: data.message || 'Successfully left the group',
+        group_deleted: data.group_deleted || false
+    };
+}
+
 export const updateGroupIcon = async (groupId: string, iconData: { icon: string; color: string }) => {
     const { data, error } = await supabase
         .rpc('update_group_icon', {
@@ -273,6 +310,11 @@ interface DBExpense {
     notes: string;
     created_at: string;
     participants: number;
+    category: {
+        name: string;
+        icon_name: string;
+        icon_color: string;
+    };
     paid_by: {
         id: string;
         username: string;
@@ -309,4 +351,10 @@ interface DBGroupDetails {
     members: DBMember[];
     expenses: DBExpense[];
     transactions: DBTransaction[];
+}
+
+interface LeaveGroupResponse {
+    success: boolean;
+    message: string;
+    group_deleted: boolean;
 }

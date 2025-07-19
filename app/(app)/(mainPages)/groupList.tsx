@@ -15,7 +15,7 @@ const GroupPage: React.FC = () => {
     const router = useRouter();
 
     const handleCreateGroup = (): void => {
-        router.push('/app/(app)/(page)/(newGroup)/newgroup');
+        router.push('/(app)/(page)/newgroup/newgroup');
     };
 
     const handleJoinGroup = (): void => {
@@ -37,9 +37,6 @@ const GroupPage: React.FC = () => {
             // The hook should detect the change and refetch
             return [...prevGroups];
         });
-
-        // Optionally navigate to the group details
-        // router.push(`/app/(app)/(page)/groups/${groupId}`);
     };
 
     return (

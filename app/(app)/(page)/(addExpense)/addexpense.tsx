@@ -15,7 +15,6 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { useRouter } from "expo-router";
 import {
   loadExpenseClassifier,
-  classifyExpense,
 } from "@/utils/categorizeExpense";
 import { Group, GroupMembers } from "@/types/group";
 import {
@@ -44,6 +43,11 @@ import {
 } from "@/components/ui/inputs";
 import ExpenseItemList from "@/components/ui/group/ExpenseItemList";
 import { performOCR, askMistralForAnalysisReceipt } from "@/utils/mistraAI";
+import ImagePicker from "expo-image-picker";
+import UploadPhotoDrawer from "@/components/ui/drawers/UploadPhotoDrawer";
+import { TakePhoto, SelectImage, ScanDocument } from "@/utils/devices/photos";
+import { set } from "zod";
+import { ResponseType } from 'react-native-document-scanner-plugin'
 
 interface AddExpensePageProps {
   expenseId?: string;
@@ -69,6 +73,7 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
   const [date, setDate] = useState<Date>(new Date());
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [scanningProgress, setScanningProgress] = useState<number>(0);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [scannedImage, setScannedImage] = useState<string>();
 
   // Expense items state
@@ -179,124 +184,52 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
   // Timer ref for simulating scanning progress
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Handle scan receipt (moved to top-right button)
-  const scanReceipt = async (): Promise<void> => {
-    const isTested = false;
-    if (!isTested) {
-      console.log("Scanning receipt...");
-      if (
-        Platform.OS === "android" &&
-        (await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.CAMERA
-        )) !== PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        Alert.alert(
-          "Error",
-          "User must grant camera permissions to use document scanner."
-        );
-        return;
-      }
+  const selectImage = async () => {
+    setIsDrawerOpen(false)
+    const result = await SelectImage();
 
-      const testImage = require("@/data_test/imgs/113218.jpg");
-      const imageUri = Image.resolveAssetSource(testImage).uri;
-      const ocrResult = await performOCR(imageUri);
-      const analysisResult = await askMistralForAnalysisReceipt(JSON.stringify(ocrResult));
-      const parsed = JSON.parse(analysisResult);
-      setTitle(parsed.store_name);
-      setDate(new Date(parsed.time));
-      setItems(
-        parsed.items.map(async (item: any) => ({
-          id: Date.now().toString() + item.item_name,
-          name: item.item_name,
-          amount: Number(item.item_value),
-          category: await predictExpenseCategory(item.item_name), // Default category, you can change this logic
-          MemberForExpenses: generateExpenseMemberForExpense(
-            Number(item.item_value),
-            expenseMembers
-          ),
-        }))
-      );
-      setIsScanning(false);
-      setScanningProgress(0);
-    } else {
-      const customData =
-        require("@/data_test/receipt.json") as ScanReceiptResult;
-      console.log("customData", customData.time);
-      console.log("customData", new Date(customData.time));
-      setTitle(customData.store_name);
-      setDate(new Date(customData.time + "T12:00:00Z"));
-      setItems(
-        await Promise.all(customData.items.map(async (item) => ({
-          id: Date.now().toString() + item.item_name,
-          name: item.item_name,
-          amount: Number(item.item_value),
-          category: await predictExpenseCategory(item.item_name), // Default category, you can change this logic
-          MemberForExpenses: generateExpenseMemberForExpense(
-            Number(item.item_value),
-            expenseMembers
-          ),
-        })))
-      );
-      setIsScanning(false);
-      setScanningProgress(0);
-
-      if (
-        Number(customData.total).toFixed(2) !==
-        customData.items
-          .reduce(
-            (sum: number, item: ReceiptItem) => sum + Number(item.item_value),
-            0
-          )
-          .toFixed(2)
-      ) {
-        Alert.alert(
-          "Notice",
-          "Total amount does not match the sum of items. Please double check your receipt item."
-        );
-      }
+    if (result) {
+      onReceiptImageSelect(result);
     }
+  };
 
-    // const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  const takePhoto = async () => {
+    setIsDrawerOpen(false)
+    const result = await ScanDocument(1, ResponseType.ImageFilePath);
 
-    // if (status !== 'granted') {
-    //     Alert.alert('Permission Denied', 'Sorry, we need camera permissions to scan receipts!');
-    //     return;
-    // }
+    if (result) {
+      onReceiptImageSelect(result);
+    }
+  };
 
-    // const result = await ImagePicker.launchCameraAsync({
-    //     allowsEditing: true,
-    //     aspect: [4, 3],
-    //     quality: 1,
-    // });
-
-    // if (!result.canceled) {
-    //     // Show scanning modal
-    //     setIsScanning(true);
-    //     setScanningProgress(0);
-
-    //     // Simulate scanning progress
-    //     timerRef.current = setInterval(() => {
-    //         setScanningProgress((prev) => {
-    //             if (prev >= 100) {
-    //                 if (timerRef.current) {
-    //                     clearInterval(timerRef.current);
-    //                     timerRef.current = null;
-    //                 }
-
-    //                 // Simulate extracted data
-    //                 simulateReceiptExtraction();
-
-    //                 // Close scanning modal after a delay
-    //                 setTimeout(() => {
-    //                     setIsScanning(false);
-    //                 }, 500);
-
-    //                 return 100;
-    //             }
-    //             return prev + 5;
-    //         });
-    //     }, 100);
-    // }
+  // Handle scan receipt (moved to top-right button)
+  const onReceiptImageSelect = async (imageUri: string): Promise<void> => {
+    setIsScanning(true);
+    const ocrResult = await performOCR(imageUri);
+    setScanningProgress(25);
+    const analysisResult = await askMistralForAnalysisReceipt(JSON.stringify(ocrResult));
+    setScanningProgress(75);
+    console.log("Received analysis result:", analysisResult);
+    const parsed = JSON.parse(analysisResult);
+    console.log("Parsed receipt data:", parsed);
+    setTitle(parsed.store_name);
+    setDate(new Date(parsed.time));
+    const newItems: ExpenseItem[] = parsed.items.filter((item: any) => item.item_value != 0).map(async (item: any) => ({
+      id: Date.now().toString() + item.item_name,
+      name: item.item_name,
+      amount: Number(item.item_value),
+      category: await predictExpenseCategory(item.item_name),
+      MemberForExpenses: generateExpenseMemberForExpense(
+        Number(item.item_value),
+        expenseMembers
+      ),
+    }));
+    setItems(
+      await Promise.all(newItems)
+    );
+    setScanningProgress(100);
+    setIsScanning(false);
+    setScanningProgress(0);
   };
 
   // Handle save for both personal and group expenses
@@ -420,7 +353,7 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
 
         <View className="flex-row items-center w-1/3 justify-end">
           <TouchableOpacity
-            onPress={scanReceipt}
+            onPress={() => setIsDrawerOpen(true)}
             className="w-10 h-10 justify-center items-center"
           >
             <MaterialCommunityIcons
@@ -538,6 +471,13 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
           </View>
         </View>
       </Modal>
+
+      <UploadPhotoDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        OnChooseFromGallery={selectImage}
+        OnTakePhoto={takePhoto}
+      />
     </KeyboardAvoidingView>
   );
 

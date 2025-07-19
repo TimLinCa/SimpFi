@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/images/Logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.simpleLife.simpFi"
+      "package": "com.simpleLife.simpFi",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -57,7 +58,8 @@
         }
       ],
       "expo-build-properties",
-      "expo-secure-store"
+      "expo-secure-store",
+      "react-native-email-link"
     ],
     "experiments": {
       "typedRoutes": true

@@ -44,7 +44,10 @@ export default function Login() {
     return (
         <View className='bg-white h-full justify-center items-center'>
             <StatusBar style="auto" />
-            <Image className='h-80 w-80' source={require("@/assets/images/Logo.jpg")} />
+            <View style={{ width: '60%', height: 100, justifyContent: 'center', alignItems: 'center' }}>
+                <Image style={{ width: '100%', height: '100%', resizeMode: 'contain' }} source={require("@/assets/images/splash.png")} />
+            </View>
+
             <FormControl className="p-4 rounded-lg border-outline-300">
                 <VStack space="xl">
                     <VStack space="xs">

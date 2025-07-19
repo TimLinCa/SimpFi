@@ -44,3 +44,18 @@ export async function updateUserProfile(userId: string, userName?: string, avata
         }
     }
 }
+
+export async function isProfileExists(userId: string): Promise<boolean> {
+    const { data, error } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .single();
+
+    if (error) {
+        console.error("Error checking profile existence:", error);
+        return false;
+    }
+
+    return !!data;
+}
