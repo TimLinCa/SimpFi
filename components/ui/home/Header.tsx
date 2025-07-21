@@ -1,16 +1,10 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MenuButton from './MenuButton';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 const Header = () => {
-
-    React.useEffect(() => {
-        const today = new Date();
-        setCurrentMonth(getMonthName(today.getMonth()));
-        setCurrentYear(today.getFullYear());
-    }, []);
 
     // Helper function to get month name
     const getMonthName = (monthIndex: number) => {
@@ -21,10 +15,32 @@ const Header = () => {
         return monthNames[monthIndex];
     };
 
-    const router = useRouter();
     const [currentMonth, setCurrentMonth] = React.useState('January');
     const [currentYear, setCurrentYear] = React.useState(2022);
     const [notificationCount, setNotificationCount] = React.useState(2);
+
+    useFocusEffect(
+        useCallback(() => {
+            // This function will run when the screen comes into focus
+            const refreshData = async () => {
+                const today = new Date();
+                setCurrentMonth(getMonthName(today.getMonth()));
+                setCurrentYear(today.getFullYear());
+            };
+
+            refreshData();
+            // Return a cleanup function (optional)
+            return () => {
+                // Any cleanup code if needed
+            };
+        }, [])
+    );
+
+    React.useEffect(() => {
+        const today = new Date();
+        setCurrentMonth(getMonthName(today.getMonth()));
+        setCurrentYear(today.getFullYear());
+    }, []);
 
     // Handle notification press
     const onNotificationPress = () => {

@@ -161,43 +161,6 @@ const MobileSummaryPage = () => {
           <Text className="text-gray-600 mt-4 text-lg font-medium">
             Loading your summary...
           </Text>
-          <View className="mt-2 px-8">
-            <Text className="text-gray-500 text-center">
-              We're gathering your financial data and group information
-            </Text>
-          </View>
-
-          {/* Loading animation icons */}
-          <View className="flex-row mt-8 space-x-4">
-            <View className="items-center">
-              <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mb-2">
-                <MaterialCommunityIcons
-                  name="wallet-outline"
-                  size={24}
-                  color="#3b82f6"
-                />
-              </View>
-              <Text className="text-xs text-gray-500">Expenses</Text>
-            </View>
-
-            <View className="items-center">
-              <View className="w-12 h-12 bg-green-100 rounded-full items-center justify-center mb-2">
-                <MaterialCommunityIcons name="cash" size={24} color="#22c55e" />
-              </View>
-              <Text className="text-xs text-gray-500">Income</Text>
-            </View>
-
-            <View className="items-center">
-              <View className="w-12 h-12 bg-purple-100 rounded-full items-center justify-center mb-2">
-                <MaterialCommunityIcons
-                  name="account-group"
-                  size={24}
-                  color="#9333ea"
-                />
-              </View>
-              <Text className="text-xs text-gray-500">Groups</Text>
-            </View>
-          </View>
         </View>
       </SafeAreaView>
     );

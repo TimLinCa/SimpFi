@@ -19,8 +19,7 @@ export const addOrUpdatePersonalExpense = async (
   items: ExpenseItem[],
   description?: string,
   date?: string,
-  expenseId?: string,
-  groupId?: number
+  expenseId?: string
 ): Promise<string | null> => {
   try {
     // Format date as YYYY-MM-DD if provided, otherwise use today
@@ -43,8 +42,7 @@ export const addOrUpdatePersonalExpense = async (
         p_description: description || null,
         p_expense_date: formattedDate,
         p_items: formattedItems,
-        p_id: expenseId || null,
-        p_group_id: groupId || null,
+        p_id: expenseId || null
       }
     );
 

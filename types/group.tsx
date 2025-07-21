@@ -14,7 +14,7 @@ export interface GroupExpense {
     date: Date;
     paidBy: Member;
     note?: string;
-    category: Category;
+    category?: Category;
     participantsNumber: number;
 }
 
