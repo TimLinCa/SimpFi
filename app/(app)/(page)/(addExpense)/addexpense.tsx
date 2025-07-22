@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
   PermissionsAndroid,
+  ActivityIndicator,
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useRouter } from "expo-router";
@@ -204,32 +205,42 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
 
   // Handle scan receipt (moved to top-right button)
   const onReceiptImageSelect = async (imageUri: string): Promise<void> => {
-    setIsScanning(true);
-    const ocrResult = await performOCR(imageUri);
-    setScanningProgress(25);
-    const analysisResult = await askMistralForAnalysisReceipt(JSON.stringify(ocrResult));
-    setScanningProgress(75);
-    console.log("Received analysis result:", analysisResult);
-    const parsed = JSON.parse(analysisResult);
-    console.log("Parsed receipt data:", parsed);
-    setTitle(parsed.store_name);
-    setDate(new Date(parsed.time));
-    const newItems: ExpenseItem[] = parsed.items.filter((item: any) => item.item_value != 0).map(async (item: any) => ({
-      id: Date.now().toString() + item.item_name,
-      name: item.item_name,
-      amount: Number(item.item_value),
-      category: await predictExpenseCategory(item.item_name),
-      MemberForExpenses: generateExpenseMemberForExpense(
-        Number(item.item_value),
-        expenseMembers
-      ),
-    }));
-    setItems(
-      await Promise.all(newItems)
-    );
-    setScanningProgress(100);
-    setIsScanning(false);
-    setScanningProgress(0);
+    let analysisResult = '';
+    try {
+      setIsScanning(true);
+      const ocrResult = await performOCR(imageUri);
+      setScanningProgress(25);
+      analysisResult = await askMistralForAnalysisReceipt(JSON.stringify(ocrResult));
+      setScanningProgress(75);
+      console.log("Received analysis result:", analysisResult);
+      const parsed = JSON.parse(analysisResult);
+      console.log("Parsed receipt data:", parsed);
+      setTitle(parsed.store_name);
+      setDate(new Date(parsed.time));
+      const newItems: ExpenseItem[] = parsed.items.filter((item: any) => item.item_value != 0).map(async (item: any) => ({
+        id: Date.now().toString() + item.item_name,
+        name: item.item_name,
+        amount: Number(item.item_value),
+        category: await predictExpenseCategory(item.item_name),
+        MemberForExpenses: generateExpenseMemberForExpense(
+          Number(item.item_value),
+          expenseMembers
+        ),
+      }));
+      setItems(
+        await Promise.all(newItems)
+      );
+      setScanningProgress(100);
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        `Failed to scan receipt. Please try again. ${analysisResult}`
+      );
+    }
+    finally {
+      setIsScanning(false);
+      setScanningProgress(0);
+    }
   };
 
   // Handle save for both personal and group expenses
@@ -448,12 +459,7 @@ const AddExpensePage: React.FC<AddExpensePageProps> = ({
       >
         <View className="flex-1 bg-black bg-opacity-70 justify-center items-center">
           <View className="bg-white p-6 rounded-lg w-4/5 items-center">
-            <MaterialCommunityIcons
-              name="receipt-text"
-              size={48}
-              color="#3b82f6"
-              className="mb-4"
-            />
+            <ActivityIndicator size="large" color="#3b82f6" />
             <Text className="text-lg font-bold text-gray-800 mb-2">
               Scanning Receipt
             </Text>

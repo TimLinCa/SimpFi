@@ -1,50 +1,117 @@
-# Welcome to your Expo app 👋
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<a id="readme-top"></a>
+<!--
+*** Thanks for checking out the Best-README-Template. If you have a suggestion
+*** that would make this better, please fork the repo and create a pull request
+*** or simply open an issue with the tag "enhancement".
+*** Don't forget to give the project a star!
+*** Thanks again! Now go create something AMAZING! :D
+-->
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
 
-1. Install dependencies
+<!-- PROJECT SHIELDS -->
+<!--
+*** I'm using markdown "reference style" links for readability.
+*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
+*** See the bottom of this document for the declaration of the reference variables
+*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
+*** https://www.markdownguide.org/basic-syntax/#reference-style-links
+-->
 
-   ```bash
-   npm install
-   ```
 
-2. Start the app
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/github_username/repo_name">
+    <img src="assets/images/splash.png" alt="Logo" width="300" height="80">
+  </a>
 
-   ```bash
-    npx expo start
-   ```
+<h3 align="center">SimpFi</h3>
 
-In the output, you'll find options to open the app in a
+  <p align="center">
+    SimpFi is a comprehensive personal finance management app built with React Native that simplifies how you track, analyze, and share your financial data. Whether you're managing personal expenses or splitting bills with friends, SimpFi provides an intuitive and powerful solution for modern financial management.
+    <br />
+    <a href="https://github.com/github_username/repo_name">View Demo</a>
+  </p>
+</div>
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+<!-- ABOUT THE PROJECT -->
+## About The Project
+|                                                                Summary                                                                 |                                                                Personal                                                                 |
+| :------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: |
+| <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Summary/Main.jpg?raw=true" alt="Logo" width="320" height="700"> | <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Personal/Main.jpg?raw=true" alt="Logo" width="320" height="700"> |
 
-When you're ready, run:
+|                                                                                                                                                                                                                  Group                                                                                                                                                                                                                  |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Group/GroupList.jpg?raw=true" alt="Logo" width="320" height="700"> <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Group/GroupExpense.jpg?raw=true" alt="Logo" width="320" height="700"> <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Group/GroupTransaction.jpg?raw=true" alt="Logo" width="320" height="700"> |
 
-```bash
-npm run reset-project
-```
+|                                                                                                                                                                                                                   Analyze Overview                                                                                                                                                                                                                   |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Analyse/Analyse-Income.jpg?raw=true" alt="Logo" width="320" height="700"> <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Analyse/Analyse-Expense.jpg?raw=true" alt="Logo" width="320" height="700"> <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Analyse/Analyse-Balance.jpg?raw=true" alt="Logo" width="320" height="700"> |
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+|                                                                                                                                               Analyze Detail                                                                                                                                               |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Analyse/Analyse-IncomePage.jpg?raw=true" alt="Logo" width="320" height="700"> <img src="https://github.com/TimLinCa/SimpFi/blob/master/assets/readme/Analyse/Analyse-ExpensePage.jpg?raw=true" alt="Logo" width="320" height="700"> |
 
-## Learn more
+### Key Features
+**📊 Summary Dashboard**
+Get a quick overview of your financial health with real-time insights into your income, expenses, and balance trends.
 
-To learn more about developing your project with Expo, look at the following resources:
+**👤 Personal Finance Management**
+- Track individual income and expenses
+- Categorize transactions for better organization
+- Monitor spending patterns and financial goals
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+**👥 Group Expense Sharing**
+- Create groups for shared expenses with friends, family, or roommates
+- Split bills fairly and track who owes what
+- Seamless transaction management within groups
+- Real-time updates on group balances and settlements
 
-## Join the community
+**📈 Advanced Analytics**
+- Detailed income and expense analysis with interactive charts
+- Monthly and yearly financial breakdowns
+- Category-wise spending insights
+- Balance trend visualization to track your financial progress
 
-Join our community of developers creating universal apps.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+
+### Built With
+* [![ReactNative][ReactNative.dev]][ReactNatiive-url]
+* [![Typescript][TypeScript.dev]][TypeScript-url]
+* [![Supabase][Supabase.dev]][Supabase-url]
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+<!-- LICENSE -->
+## License
+
+Distributed under the project_license. See `LICENSE.txt` for more information.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+<!-- CONTACT -->
+## Contact
+
+Tim Lin - [@Contact](https://huienlin-resume.vercel.app/) - TimLin626@gmail.com
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[ReactNative.dev]: https://img.shields.io/badge/ReactNative-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[ReactNatiive-url]: https://reactnative.dev/
+[TypeScript.dev]: https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white
+[TypeScript-url]: https://www.typescriptlang.org/
+[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
+[Supabase.dev]: https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white
+[Supabase-url]: https://supabase.com/

@@ -72,10 +72,10 @@ export const performOCR = async (imagePath: string): Promise<Array<OCRPageObject
 
 export const askMistralForAnalysisReceipt = async (ocrResult: string): Promise<string> => {
     console.log("Asking Mistral for receipt analysis with OCR result:", ocrResult);
-    const context = "You are analyzing a receipt and need to convert it to a specific JSON format. No other context is needed for this task. Please ensure the output is in the exact format specified below. If there is no tax, no need to include it, otherwise the tax should be included as a separate item with the name 'Tax'. The date should be in the format 'YYYY-MM-DD'. Only the json format is expected in the response, without any additional text or explanation and the item name must convert to human readable names. The sum of item_value should match the total value in the receipt. If there is no store name, use 'Unknown Store' as the default store name.";
+    const context = "You are analyzing a receipt and need to convert it to a specific JSON format. No other context is needed for this task. Please ensure the output is in the exact format specified below. The date should be in the format 'YYYY-MM-DD'. Only the json format is expected in the response, without any additional text or explanation and the item name must convert to human readable names.";
     const question = `Analyze this receipt and convert it to the following JSON format:
     {
-        "total": "6.8",
+        "total": "8.96",
         "time": "2025-04-08",
         "store_name": "REAL CANADIAN SUPERSTORE",
         "items": [
@@ -84,12 +84,16 @@ export const askMistralForAnalysisReceipt = async (ocrResult: string): Promise<s
                 "item_name": "LONGKOV VMRCLLI"
             },
             {
-                "item_value": "2.48",
-                "item_name": "NN CORN STARCH"
-            }
+                "item_value": "4.60",
+                "item_name": "SKIM MILK"
+            },
             {
-                "item_value": "0.32",
-                "item_name": "Tax"
+                "item_value": "0.11",
+                "item_name": "RECYCLING FEE"
+            },
+            {
+                "item_value": "0.25",
+                "item_name": "DEPOSIT"
             }
         ]
     }
@@ -113,7 +117,7 @@ export const askMistralForAnalysisReceipt = async (ocrResult: string): Promise<s
 export const askMistral = async (question: string, context: string): Promise<AssistantMessage> => {
     try {
         const response = await client.chat.complete({
-            model: "open-mistral-nemo",
+            model: "open-mistral-7b",
             messages: [
                 { role: "user", content: context },
                 { role: "user", content: question }
