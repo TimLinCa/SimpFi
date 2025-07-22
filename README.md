@@ -32,7 +32,9 @@
   <p align="center">
     SimpFi is a comprehensive personal finance management app built with React Native that simplifies how you track, analyze, and share your financial data. Whether you're managing personal expenses or splitting bills with friends, SimpFi provides an intuitive and powerful solution for modern financial management.
     <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    <a href="https://youtube.com/shorts/B52QJcuqQ4A?feature=share">View Demo</a>
+<a href="https://youtube.com/shorts/4knZMUcRLDc?feature=share">View Scan Demo</a>
+    
   </p>
 </div>
 
